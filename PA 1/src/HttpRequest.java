@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
  * 
  * @author Rob Johansen
  */
-public class HttpRequest
-{
+public class HttpRequest {
+	
 	// Constants for request codes and messages
 	private final int    BAD_REQUEST_CODE                   = 400;
 	private final String BAD_REQUEST_MESSAGE                = "Bad Request";
@@ -30,18 +30,17 @@ public class HttpRequest
 	
 	// Request parameters
 	private String method;
-	private String URI;
+	private String uri;
 	private String version;
 	private String headers = "";
 	
-	// URI tokens
+	// uri tokens
 	private String host;
 	private int port;
 	private String path;
 	
 	/** Create HttpRequest by reading it from the client socket */
-	public HttpRequest(BufferedReader fromClient) throws IOException
-	{
+	public HttpRequest(BufferedReader fromClient) throws IOException {
 		String requestLine     = fromClient.readLine();
 		String[] requestTokens = requestLine.split(" ");
 		
@@ -49,42 +48,36 @@ public class HttpRequest
 			throwHttpRequestException(BAD_REQUEST_CODE, BAD_REQUEST_MESSAGE);
 		
 		method  = requestTokens[0];
-		URI     = requestTokens[1];
+		uri     = requestTokens[1];
 		version = requestTokens[2];
 		
 		// Return error code 501/400 if request method is not "GET"
-		if (!method.equals(GET_METHOD))
-		{
+		if (!method.equals(GET_METHOD)) {
 			if (method.equals(HEAD_METHOD) || method.equals(POST_METHOD))
 				throwHttpRequestException(NOT_IMPLEMENTED_CODE, NOT_IMPLEMENTED_MESSAGE);
 			else
 				throwHttpRequestException(BAD_REQUEST_CODE, BAD_REQUEST_MESSAGE);
 		}
 		
-		// Return error code 400 if URI is not absolute (must begin with scheme followed by colon)
+		// Return error code 400 if uri is not absolute (must begin with scheme followed by colon)
 		Pattern uriPattern = Pattern.compile("^\\w+:\\/\\/(?<host>[\\w\\d\\.]+):?(?<port>\\d+)?(?<path>\\/?.*)$");
-		Matcher uriMatcher = uriPattern.matcher(URI);
+		Matcher uriMatcher = uriPattern.matcher(uri);
 		
-		if (uriMatcher.matches())
-		{
+		if (uriMatcher.matches()) {
 			host = uriMatcher.group("host");
 			
 			if (host == null)
 				throwHttpRequestException(BAD_REQUEST_CODE, BAD_REQUEST_MESSAGE);
 			
-			if (uriMatcher.group("port") != null)
-			{
-				try
-				{
+			if (uriMatcher.group("port") != null) {
+				try {
 					port = Integer.parseInt(uriMatcher.group("port"));
 				}
-				catch (NumberFormatException e)
-				{
+				catch (NumberFormatException e) {
 					throwHttpRequestException(BAD_REQUEST_CODE, BAD_REQUEST_MESSAGE);
 				}
 			}
-			else
-			{
+			else {
 				port = HTTP_PORT;
 			}
 			
@@ -93,8 +86,7 @@ public class HttpRequest
 			else
 				path = "/";
 		}
-		else
-		{
+		else {
 			throwHttpRequestException(BAD_REQUEST_CODE, BAD_REQUEST_MESSAGE);
 		}
 		
@@ -107,14 +99,12 @@ public class HttpRequest
 		
 		String line = fromClient.readLine();
 		
-		while (line.length() != 0)
-		{
+		while (line.length() != 0) {
 			// Valid characters in HTTP 1.0 header name: !#$%&'*+-.0-9A-Z^_`a-z|~
 			Pattern header = Pattern.compile("^(?<name>[\\!\\#\\$\\%\\&\\'\\*\\+\\-\\.0-9A-Z\\^\\_\\`a-z\\|\\~]+): (?<value>.*)$");
 			Matcher headerMatcher = header.matcher(line);
 			
-			if (headerMatcher.matches())
-			{
+			if (headerMatcher.matches()) {
 				String headerName  = headerMatcher.group("name");
 				String headerValue = headerMatcher.group("value");
 				
@@ -123,8 +113,7 @@ public class HttpRequest
 				
 				headers += headerName + ": " + headerValue + CRLF;
 			}
-			else
-			{
+			else {
 				throwHttpRequestException(BAD_REQUEST_CODE, BAD_REQUEST_MESSAGE);
 			}
 			
@@ -132,34 +121,33 @@ public class HttpRequest
 		}
 	}
 	
-	private void throwHttpRequestException(int statusCode, String message) throws HttpRequestException
-	{
+	private void throwHttpRequestException(int statusCode, String message) throws HttpRequestException {
 		throw new HttpRequestException(statusCode, message);
 	}
-
+	
+	public String getUri() {
+		return uri;
+	}
+	
 	/** Return host for which this request is intended */
-	public String getHost()
-	{
+	public String getHost() {
 		return host;
 	}
 
 	/** Return port */
-	public int getPort()
-	{
+	public int getPort() {
 		return port;
 	}
 	
 	/** Return path */
-	public String getPath()
-	{
+	public String getPath() {
 		return path;
 	}
 
 	/**
 	 * Convert request into a string for easy re-sending.
 	 */
-	public String toString()
-	{
+	public String toString() {
 		String req = method + " " + path + " " + version + CRLF;
 		req += headers;
 		req += CRLF;
