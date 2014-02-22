@@ -39,9 +39,17 @@ public class HttpRequest {
 	private int port;
 	private String path;
 	
+	// is this a request for an image?
+	private boolean image = false;
+	private String imageExtension = "";
+	
 	/** Create HttpRequest by reading it from the client socket */
 	public HttpRequest(BufferedReader fromClient) throws IOException {
-		String requestLine     = fromClient.readLine();
+		String requestLine = fromClient.readLine();
+		
+		if (requestLine == null)
+			throw new IOException("Request from client was null (Firefox issue?)");
+		
 		String[] requestTokens = requestLine.split(" ");
 		
 		if (requestTokens.length < 3)
@@ -108,8 +116,10 @@ public class HttpRequest {
 				String headerName  = headerMatcher.group("name");
 				String headerValue = headerMatcher.group("value");
 				
-				if (headerName.toLowerCase().equals("host") || headerName.toLowerCase().equals("connection"))
+				if (headerName.toLowerCase().equals("host") || headerName.toLowerCase().equals("connection")) {
+					line = fromClient.readLine();
 					continue;
+				}
 				
 				headers += headerName + ": " + headerValue + CRLF;
 			}
@@ -118,6 +128,14 @@ public class HttpRequest {
 			}
 			
 			line = fromClient.readLine();
+		}
+		
+		Pattern imagePattern = Pattern.compile(".*\\.(?<extension>bmp|gif|jpg|jpeg|png)");
+		Matcher imageMatcher = imagePattern.matcher(uri);
+		
+		if (imageMatcher.matches()) {
+			image = true;
+			imageExtension = imageMatcher.group("extension");
 		}
 	}
 	
@@ -142,6 +160,14 @@ public class HttpRequest {
 	/** Return path */
 	public String getPath() {
 		return path;
+	}
+	
+	public boolean isImage() {
+		return image;
+	}
+	
+	public String getImageExtension() {
+		return imageExtension;
 	}
 
 	/**
