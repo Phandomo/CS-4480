@@ -7,6 +7,10 @@ import javax.xml.ws.http.HTTPException;
  */
 public class HttpRequestException extends HTTPException
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String message;
 	
 	/**
