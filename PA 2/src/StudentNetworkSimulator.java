@@ -83,8 +83,10 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // state information for A or B.
     // Also add any necessary methods (e.g. checksum of a String)
 	
-	private int currentSeqNum = 0;
-	Packet currentPacket = null;
+	private int seqNum;
+	private int expectedSeqNum;
+	Packet currentPacket;
+	boolean messageInTransit;
 	
     // This is the constructor.  Don't touch!
     public StudentNetworkSimulator(int numMessages,
@@ -104,10 +106,14 @@ public class StudentNetworkSimulator extends NetworkSimulator
     protected void aOutput(Message message) {
     	System.out.println("SIDE A: Received message from layer 5 ("+message.getData()+")");
     	
-    	// TODO: Make sure there is no message currently in transit (and if there is, drop the one that just came in (i.e. return))
+    	if (messageInTransit) {
+    		System.out.println("SIDE A: Previous message currently in transit. Dropping this message.");
+    		return;
+    	}
     	
-    	currentPacket = makePacket(message, A, B, currentSeqNum, currentSeqNum);
+    	currentPacket = makePacket(message, A, B, seqNum, seqNum);
     	toLayer3(A, currentPacket);
+    	messageInTransit = true;
     }
     
     // This routine will be called whenever a packet sent from the B-side 
@@ -116,6 +122,18 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // sent from the B-side.
     protected void aInput(Packet packet) {
     	System.out.println("SIDE A: Received packet from side B via layer 3.");
+    	
+    	if (isCorruptPacket(packet)) {
+    		System.out.println("SIDE A: Packet from side B is corrupt. Retransmitting last packet.");
+    		toLayer3(A, currentPacket);
+    	} else if (packet.getAcknum() != seqNum) {
+    		System.out.println("SIDE A: Last packet sent to side B was corrupt. Retransmitting last packet.");
+    		toLayer3(A, currentPacket);
+    	} else {
+    		System.out.println("SIDE A: Last packet acknowledged from side B.");
+    		seqNum = seqNum == 0 ? 1 : 0;
+    		messageInTransit = false;
+    	}
     }
     
     // This routine will be called when A's timer expires (thus generating a 
@@ -131,7 +149,11 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // initialization (e.g. of member variables you add to control the state
     // of entity A).
     protected void aInit() {
-    	System.out.println("SIDE A: Initializing...");
+    	System.out.println("SIDE A: Initializing sequence number to 0.");
+    	seqNum = 0;
+    	
+    	System.out.println("SIDE A: Initializing message in transit to false.");
+    	messageInTransit = false;
     }
     
     // This routine will be called whenever a packet sent from the B-side 
@@ -141,7 +163,21 @@ public class StudentNetworkSimulator extends NetworkSimulator
     protected void bInput(Packet packet) {
     	System.out.println("SIDE B: Received packet from side A via layer 3 ("+packet.getPayload()+").");
     	
+    	int acknum;
     	
+    	if (isCorruptPacket(packet)) {
+    		System.out.println("SIDE B: Packet from side A is corrupt. Sending duplicate ACK.");
+    		acknum = packet.getSeqnum() == 0 ? 1 : 0;
+    	} else if (packet.getSeqnum() != expectedSeqNum) {
+    		System.out.println("SIDE B: Packet from side A is duplicate. Sending duplicate ACK.");
+    		acknum = packet.getSeqnum() == 0 ? 1 : 0;
+    	} else {
+    		System.out.println("SIDE B: Packet from side A is valid. Sending ACK.");
+    		acknum = packet.getSeqnum();
+    		expectedSeqNum = packet.getSeqnum() == 0 ? 1 : 0;
+    	}
+    	
+    	toLayer3(B, makePacket(new Message(" "), B, A, 0, acknum));
     }
     
     // This routine will be called once, before any of your other B-side 
@@ -149,7 +185,8 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // initialization (e.g. of member variables you add to control the state
     // of entity B).
     protected void bInit() {
-    	System.out.println("SIDE B: Initializing...");
+    	System.out.println("SIDE B: Initializing expected sequence number to 0.");
+    	expectedSeqNum = 0;
     }
     
     /*
@@ -182,15 +219,13 @@ public class StudentNetworkSimulator extends NetworkSimulator
     }
     
     private boolean isCorruptPacket(Packet packet) {
-    	int packetChecksum = packet.getChecksum();
     	int calculatedChecksum = 0;
-    	
     	calculatedChecksum += packet.getSeqnum();
     	calculatedChecksum += packet.getAcknum();
     	
     	for (char c : packet.getPayload().toCharArray())
     		calculatedChecksum += (int) c;
     	
-    	return calculatedChecksum == packetChecksum;
+    	return calculatedChecksum != packet.getChecksum();
     }
 }
