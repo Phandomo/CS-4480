@@ -82,7 +82,10 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // these variables to send messages error free!  They can only hold
     // state information for A or B.
     // Also add any necessary methods (e.g. checksum of a String)
-
+	
+	private int currentSeqNum = 0;
+	Packet currentPacket = null;
+	
     // This is the constructor.  Don't touch!
     public StudentNetworkSimulator(int numMessages,
                                    double loss,
@@ -99,12 +102,12 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // the data in such a message is delivered in-order, and correctly, to
     // the receiving upper layer.
     protected void aOutput(Message message) {
-    	System.out.println("SIDE A: Received message from layer 5.");
+    	System.out.println("SIDE A: Received message from layer 5 ("+message.getData()+")");
     	
     	// TODO: Make sure there is no message currently in transit (and if there is, drop the one that just came in (i.e. return))
     	
-    	Packet packet = makePacket(message, A, B);
-    	toLayer3(A, packet);
+    	currentPacket = makePacket(message, A, B, currentSeqNum, currentSeqNum);
+    	toLayer3(A, currentPacket);
     }
     
     // This routine will be called whenever a packet sent from the B-side 
@@ -112,7 +115,7 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // arrives at the A-side.  "packet" is the (possibly corrupted) packet
     // sent from the B-side.
     protected void aInput(Packet packet) {
-    	System.out.println("SIDE A: Received packet from side B (via layer 3).");
+    	System.out.println("SIDE A: Received packet from side B via layer 3.");
     }
     
     // This routine will be called when A's timer expires (thus generating a 
@@ -136,7 +139,7 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // arrives at the B-side.  "packet" is the (possibly corrupted) packet
     // sent from the A-side.
     protected void bInput(Packet packet) {
-    	System.out.println("SIDE B: Received packet from side A (via layer 3).");
+    	System.out.println("SIDE B: Received packet from side A via layer 3 ("+packet.getPayload()+").");
     	
     	
     }
@@ -149,19 +152,45 @@ public class StudentNetworkSimulator extends NetworkSimulator
     	System.out.println("SIDE B: Initializing...");
     }
     
-    // Helper methods
-    private Packet makePacket(Message message, int sender, int receiver) {
+    /*
+     * HELPER METHODS
+     */
+    private Packet makePacket(Message message, int sender, int receiver, int seqnum, int acknum) {
     	System.out.println("SIDE "+sideToString(sender)+": Making packet destined for side "+sideToString(receiver)+".");
     	
-    	Packet packet = null;
+    	// rdt 2.2 (bits may be corrupt)
+    	String payload = message.getData();
+    	int checksum = createChecksum(seqnum, acknum, payload);
     	
-    	// rdt 1.0 (everything is perfect)
-    	packet = new Packet(0, 0, 0, message.getData());
-    	
-    	return packet;
+    	return new Packet(seqnum, acknum, checksum, payload);
     }
     
     private String sideToString(int side) {
     	return side == A ? "A" : "B";
+    }
+    
+    private int createChecksum(int seqnum, int acknum, String payload) {
+    	int checksum = 0;
+    	
+    	checksum += seqnum;
+    	checksum += acknum;
+    	
+    	for (char c : payload.toCharArray())
+    		checksum += (int) c;
+    	
+    	return checksum;
+    }
+    
+    private boolean isCorruptPacket(Packet packet) {
+    	int packetChecksum = packet.getChecksum();
+    	int calculatedChecksum = 0;
+    	
+    	calculatedChecksum += packet.getSeqnum();
+    	calculatedChecksum += packet.getAcknum();
+    	
+    	for (char c : packet.getPayload().toCharArray())
+    		calculatedChecksum += (int) c;
+    	
+    	return calculatedChecksum == packetChecksum;
     }
 }
