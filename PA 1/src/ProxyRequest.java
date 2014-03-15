@@ -124,17 +124,18 @@ public class ProxyRequest implements Runnable {
 					
 					cacheLock.lock();
 					
-					// Read the response from the cache
+					// Read response from cache and send to client
 					if (request.isImage()) {
-						// TODO
+						String extension = request.getImageExtension();
+						File sourceImage = new File("./" + uriHash + "/" + cacheFileName + "." + extension);
+						fromOriginImage = ImageIO.read(sourceImage);
+						sendImageResponseToClient(clientSocket.getOutputStream(), fromOriginImage, extension);
 					} else {
 						try (BufferedReader reader = Files.newBufferedReader(cachedFile, Charset.forName(Charset.defaultCharset().toString()))) {
 							while ((responseLine = reader.readLine()) != null) {
 								response.append(responseLine + "\r\n");
 							}
 						}
-						
-						// Send the cached response to the client
 						sendTextResponseToClient(clientSocket.getOutputStream(), response.toString());
 					}
 				}

@@ -1,4 +1,6 @@
 *.class
+.DS_Store
+.gitignore
 
 # Package Files #
 *.jar
