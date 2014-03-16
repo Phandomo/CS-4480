@@ -85,7 +85,8 @@ public class StudentNetworkSimulator extends NetworkSimulator
 	
 	private int seqNum;
 	private int expectedSeqNum;
-	Packet currentPacket;
+	Packet currentPacketA;
+	Packet currentPacketB;
 	boolean messageInTransit;
 	
     // This is the constructor.  Don't touch!
@@ -111,8 +112,8 @@ public class StudentNetworkSimulator extends NetworkSimulator
     		return;
     	}
     	
-    	currentPacket = makePacket(message, A, B, seqNum, seqNum);
-    	toLayer3(A, currentPacket);
+    	currentPacketA = makePacket(message, A, B, seqNum, seqNum);
+    	toLayer3(A, currentPacketA);
     	messageInTransit = true;
     }
     
@@ -125,10 +126,10 @@ public class StudentNetworkSimulator extends NetworkSimulator
     	
     	if (isCorruptPacket(packet)) {
     		System.out.println("SIDE A: Packet from side B is corrupt. Retransmitting last packet.");
-    		toLayer3(A, currentPacket);
+    		toLayer3(A, currentPacketA);
     	} else if (packet.getAcknum() != seqNum) {
     		System.out.println("SIDE A: Last packet sent to side B was corrupt. Retransmitting last packet.");
-    		toLayer3(A, currentPacket);
+    		toLayer3(A, currentPacketA);
     	} else {
     		System.out.println("SIDE A: Last packet acknowledged from side B.");
     		seqNum = seqNum == 0 ? 1 : 0;
@@ -163,21 +164,17 @@ public class StudentNetworkSimulator extends NetworkSimulator
     protected void bInput(Packet packet) {
     	System.out.println("SIDE B: Received packet from side A via layer 3 ("+packet.getPayload()+").");
     	
-    	int acknum;
-    	
-    	if (isCorruptPacket(packet)) {
-    		System.out.println("SIDE B: Packet from side A is corrupt. Sending duplicate ACK.");
-    		acknum = packet.getSeqnum() == 0 ? 1 : 0;
-    	} else if (packet.getSeqnum() != expectedSeqNum) {
-    		System.out.println("SIDE B: Packet from side A is duplicate. Sending duplicate ACK.");
-    		acknum = packet.getSeqnum() == 0 ? 1 : 0;
+    	if (isCorruptPacket(packet) || packet.getSeqnum() != expectedSeqNum) {
+    		System.out.println("SIDE B: Packet from side A is corrupt or duplicate. Sending duplicate ACK.");
+    		if (currentPacketB == null)
+    			currentPacketB = makePacket(new Message(" "), B, A, 0, packet.getSeqnum() == 0 ? 1 : 0);
     	} else {
     		System.out.println("SIDE B: Packet from side A is valid. Sending ACK.");
-    		acknum = packet.getSeqnum();
     		expectedSeqNum = packet.getSeqnum() == 0 ? 1 : 0;
+    		currentPacketB = makePacket(new Message(" "), B, A, 0, packet.getSeqnum());
     	}
     	
-    	toLayer3(B, makePacket(new Message(" "), B, A, 0, acknum));
+    	toLayer3(B, currentPacketB);
     }
     
     // This routine will be called once, before any of your other B-side 
