@@ -22,7 +22,7 @@
 	
 2. Execute the following command to compile the four classes with JDK version 7:
 
-    /usr/local/apps/jdk/jdk1.7.0_45/javac *.java
+    /usr/local/apps/jdk/jdk1.7.0_45/bin/javac *.java
 
 
 ############################
@@ -33,6 +33,6 @@
 
 1. Start the proxy server by issuing this command with JDK version 7:
 
-    /usr/local/apps/jdk/jdk1.7.0_45/java WebProxyServer <port>
+    /usr/local/apps/jdk/jdk1.7.0_45/bin/java WebProxyServer <port>
 
 2. Use telnet or Firefox 15 to test.
