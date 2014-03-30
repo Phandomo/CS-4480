@@ -28,7 +28,7 @@ public abstract class NetworkSimulator
 
     private int nSim;
     private int nToLayer3;
-    private int nLost;
+    public int nLost;
     private int nCorrupt;
     private double time;
     

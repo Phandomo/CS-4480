@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class StudentNetworkSimulator extends NetworkSimulator
 {
     /*
@@ -83,6 +85,14 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // state information for A or B.
     // Also add any necessary methods (e.g. checksum of a String)
 	
+	// Go-Back-N variables
+	private int base;
+	private int nextSeqNum;
+	private int windowSize;
+	private ArrayList<Packet> buffer;
+	private int bufferMax;
+	
+	// Alternating-Bit variables
 	private int seqNum;
 	private int expectedSeqNum;
 	Packet currentPacketA;
@@ -119,6 +129,7 @@ public class StudentNetworkSimulator extends NetworkSimulator
     	System.out.println("Number of data packets retransmitted:\t\t" + numDataPacketsRetransmitted);
     	System.out.println("Number of ACK packets:\t\t\t\t" + numAckPacketsTransmitted);
     	System.out.println("Number of corrupt packets received:\t\t" + numCorruptPacketsReceived);
+    	System.out.println("Number of packets lost:\t\t\t\t" + nLost);
     	
     	if (numRtts > 0)
     		System.out.println("Average RTT:\t\t\t\t\t" + (totalRttTime / numRtts) + "\n");
@@ -130,92 +141,188 @@ public class StudentNetworkSimulator extends NetworkSimulator
     // has a message to send.  It is the job of your protocol to insure that
     // the data in such a message is delivered in-order, and correctly, to
     // the receiving upper layer.
+    
+    /* Go-Back-N Version */
     protected void aOutput(Message message) {
-    	System.out.println("SIDE A: Received message from layer 5 ("+message.getData()+")");
-    	
-    	if (messageInTransit) {
-    		System.out.println("SIDE A: Previous message currently in transit. Dropping this message.");
-    		return;
+    	// Because the assignment requires us to maintain a buffer, and because 
+    	// we might send packets after calls from layer 5 or ACKs from layer 3,
+    	// this method simply appends to the buffer (if it's not full) and calls
+    	// a helper method to do the actual sending.
+    	if (buffer.size() < base + windowSize + bufferMax) {
+    		System.out.println("SIDE A: Received message from layer 5 ("+message.getData()+")");
+    		buffer.add(makePacket(message, A, B, buffer.size(), buffer.size()));
+    		sendNextPackets();
+    		numDataPacketsTransmitted++;
+    	} else {
+    		System.out.println("SIDE A: Window and buffer full. Dropping message.");
     	}
-    	
-    	currentPacketA = makePacket(message, A, B, seqNum, seqNum);
-    	startRtt = getTime();
-    	toLayer3(A, currentPacketA);
-    	startTimer();
-    	messageInTransit = true;
-    	numDataPacketsTransmitted++;
     }
+    
+    /* Alternating-Bit Version */
+//    protected void aOutput(Message message) {
+//    	System.out.println("SIDE A: Received message from layer 5 ("+message.getData()+")");
+//    	
+//    	if (messageInTransit) {
+//    		System.out.println("SIDE A: Previous message currently in transit. Dropping this message.");
+//    		return;
+//    	}
+//    	
+//    	currentPacketA = makePacket(message, A, B, seqNum, seqNum);
+//    	startRtt = getTime();
+//    	toLayer3(A, currentPacketA);
+//    	startTimer();
+//    	messageInTransit = true;
+//    	numDataPacketsTransmitted++;
+//    }
     
     // This routine will be called whenever a packet sent from the B-side 
     // (i.e. as a result of a toLayer3() being done by a B-side procedure)
     // arrives at the A-side.  "packet" is the (possibly corrupted) packet
     // sent from the B-side.
+    
+    /* Go-Back-N Version */
     protected void aInput(Packet packet) {
     	System.out.println("SIDE A: Received packet from side B via layer 3.");
     	
     	totalRttTime += getTime() - startRtt;
-		numRtts++;
+    	numRtts++;
     	
     	if (isCorruptPacket(packet)) {
     		System.out.println("SIDE A: Packet from side B is corrupt. Waiting for timeout.");
     		numCorruptPacketsReceived++;
-    	} else if (packet.getAcknum() != seqNum) {
-    		System.out.println("SIDE A: Last packet sent to side B was corrupt. Waiting for timeout.");
     	} else {
-    		System.out.println("SIDE A: Last packet acknowledged from side B.");
-    		stopTimer(A);
-    		seqNum = seqNum == 0 ? 1 : 0;
-    		messageInTransit = false;
+    		System.out.println("SIDE A: Packet "+packet.getAcknum()+" acknowledged from side B.");
+    		base = packet.getAcknum() + 1;
+    		if (base == nextSeqNum)
+    			stopTimer(A);
+//    		else
+//    			startTimer();
+//    		sendNextPackets();
     	}
     }
+    
+    /* Alternating-Bit Version */
+//    protected void aInput(Packet packet) {
+//    	System.out.println("SIDE A: Received packet from side B via layer 3.");
+//    	
+//    	totalRttTime += getTime() - startRtt;
+//		numRtts++;
+//    	
+//    	if (isCorruptPacket(packet)) {
+//    		System.out.println("SIDE A: Packet from side B is corrupt. Waiting for timeout.");
+//    		numCorruptPacketsReceived++;
+//    	} else if (packet.getAcknum() != seqNum) {
+//    		System.out.println("SIDE A: Last packet sent to side B was corrupt. Waiting for timeout.");
+//    	} else {
+//    		System.out.println("SIDE A: Last packet acknowledged from side B.");
+//    		stopTimer(A);
+//    		seqNum = seqNum == 0 ? 1 : 0;
+//    		messageInTransit = false;
+//    	}
+//    }
     
     // This routine will be called when A's timer expires (thus generating a 
     // timer interrupt). You'll probably want to use this routine to control 
     // the retransmission of packets. See startTimer() and stopTimer(), above,
     // for how the timer is started and stopped. 
+    
+    /* Go-Back-N Version */
     protected void aTimerInterrupt() {
-    	System.out.println("SIDE A: Timer interrupt. Retransmitting last packet.");
+    	System.out.println("SIDE A: Timer interrupt.");
     	startRtt = getTime();
-    	toLayer3(A, currentPacketA);
     	startTimer();
-    	numDataPacketsRetransmitted++;
+    	for (int i = base; i < nextSeqNum; i++) {
+    		System.out.println("SIDE A: Retransmitting unacknowledged packet "+i+".");
+    		toLayer3(A, buffer.get(i));
+    		numDataPacketsRetransmitted++;
+    	}
     }
+    
+    /* Alternating-Bit Version */
+//    protected void aTimerInterrupt() {
+//    	System.out.println("SIDE A: Timer interrupt. Retransmitting last packet.");
+//    	startRtt = getTime();
+//    	toLayer3(A, currentPacketA);
+//    	startTimer();
+//    	numDataPacketsRetransmitted++;
+//    }
     
     // This routine will be called once, before any of your other A-side 
     // routines are called. It can be used to do any required
     // initialization (e.g. of member variables you add to control the state
     // of entity A).
+    
+    /* Go-Back-N Version */
     protected void aInit() {
-    	System.out.println("SIDE A: Initializing sequence number to 0.");
-    	seqNum = 0;
+    	System.out.println("SIDE A: Initializing base to 0.");
+    	base = 0;
     	
-    	System.out.println("SIDE A: Initializing message in transit to false.");
-    	messageInTransit = false;
+    	System.out.println("SIDE A: Initializing next sequence number to 0.");
+    	nextSeqNum = 0;
+    	
+    	System.out.println("SIDE A: Initializing window size to 8.");
+    	windowSize = 8;
+    	
+    	System.out.println("SIDE A: Initializing message buffer capacity to 50.");
+    	bufferMax = 50;
+    	buffer = new ArrayList<>();
     }
+    
+    /* Alternating-Bit Version */
+//    protected void aInit() {
+//    	System.out.println("SIDE A: Initializing sequence number to 0.");
+//    	seqNum = 0;
+//    	
+//    	System.out.println("SIDE A: Initializing message in transit to false.");
+//    	messageInTransit = false;
+//    }
     
     // This routine will be called whenever a packet sent from the B-side 
     // (i.e. as a result of a toLayer3() being done by an A-side procedure)
     // arrives at the B-side.  "packet" is the (possibly corrupted) packet
     // sent from the A-side.
+    
+    /* Go-Back-N Version */
     protected void bInput(Packet packet) {
-    	System.out.println("SIDE B: Received packet from side A via layer 3 ("+packet.getPayload()+").");
+    	System.out.println("SIDE B: Received packet "+packet.getSeqnum()+" from side A via layer 3 ("+packet.getPayload()+").");
     	
     	if (isCorruptPacket(packet) || packet.getSeqnum() != expectedSeqNum) {
-    		System.out.println("SIDE B: Packet from side A is corrupt or duplicate. Sending duplicate ACK.");
+    		System.out.println("SIDE B: Packet "+packet.getSeqnum()+" is corrupt or duplicate. Sending duplicate ACK.");
     		if (isCorruptPacket(packet))
     			numCorruptPacketsReceived++;
-    		if (currentPacketB == null)
-    			currentPacketB = makePacket(new Message(" "), B, A, 0, packet.getSeqnum() == 0 ? 1 : 0);
+//    		if (currentPacketB == null)
+//    			currentPacketB = makePacket(new Message(" "), B, A, 0, expectedSeqNum);
     	} else {
-    		System.out.println("SIDE B: Packet from side A is valid. Delivering to layer 5 and sending ACK.");
+    		System.out.println("SIDE B: Packet "+packet.getSeqnum()+" is valid. Delivering to layer 5 and sending ACK.");
     		toLayer5(B, packet.getPayload());
-    		expectedSeqNum = packet.getSeqnum() == 0 ? 1 : 0;
-    		currentPacketB = makePacket(new Message(" "), B, A, 0, packet.getSeqnum());
+    		currentPacketB = makePacket(new Message(" "), B, A, 0, expectedSeqNum);
+    		expectedSeqNum++;
     	}
     	
     	toLayer3(B, currentPacketB);
     	numAckPacketsTransmitted++;
     }
+    
+    /* Alternating-Bit Version */
+//    protected void bInput(Packet packet) {
+//    	System.out.println("SIDE B: Received packet from side A via layer 3 ("+packet.getPayload()+").");
+//    	
+//    	if (isCorruptPacket(packet) || packet.getSeqnum() != expectedSeqNum) {
+//    		System.out.println("SIDE B: Packet from side A is corrupt or duplicate. Sending duplicate ACK.");
+//    		if (isCorruptPacket(packet))
+//    			numCorruptPacketsReceived++;
+//    		if (currentPacketB == null)
+//    			currentPacketB = makePacket(new Message(" "), B, A, 0, packet.getSeqnum() == 0 ? 1 : 0);
+//    	} else {
+//    		System.out.println("SIDE B: Packet from side A is valid. Delivering to layer 5 and sending ACK.");
+//    		toLayer5(B, packet.getPayload());
+//    		expectedSeqNum = packet.getSeqnum() == 0 ? 1 : 0;
+//    		currentPacketB = makePacket(new Message(" "), B, A, 0, packet.getSeqnum());
+//    	}
+//    	
+//    	toLayer3(B, currentPacketB);
+//    	numAckPacketsTransmitted++;
+//    }
     
     // This routine will be called once, before any of your other B-side 
     // routines are called. It can be used to do any required
@@ -224,15 +331,17 @@ public class StudentNetworkSimulator extends NetworkSimulator
     protected void bInit() {
     	System.out.println("SIDE B: Initializing expected sequence number to 0.");
     	expectedSeqNum = 0;
+    	
+    	currentPacketB = makePacket(new Message(" "), B, A, 0, -1);
     }
     
     /*
      * HELPER METHODS
      */
     private Packet makePacket(Message message, int sender, int receiver, int seqnum, int acknum) {
-    	System.out.println("SIDE "+sideToString(sender)+": Making packet destined for side "+sideToString(receiver)+".");
+//    	System.out.println("SIDE "+sideToString(sender)+": Making packet destined for side "+sideToString(receiver)+".");
     	
-    	// rdt 2.2 (bits may be corrupt)
+    	// Create checksum (bits may be corrupted later)
     	String payload = message.getData();
     	int checksum = createChecksum(seqnum, acknum, payload);
     	
@@ -255,6 +364,24 @@ public class StudentNetworkSimulator extends NetworkSimulator
     	return checksum;
     }
     
+    private void sendNextPackets() {
+    	try {
+    		while (nextSeqNum < base + windowSize) {
+    			if (nextSeqNum < buffer.size())
+    				System.out.println("SIDE A: Sending packet "+ nextSeqNum +" to side B.");
+    			
+        		toLayer3(A, buffer.get(nextSeqNum));
+        		
+        		if (base == nextSeqNum)
+        			startTimer();
+        		
+        		nextSeqNum++;
+        	} 
+    	} catch (IndexOutOfBoundsException e) {
+    		System.out.println("SIDE A: Window and buffer are empty. No more packets to send.");
+    	}
+    }
+    
     private boolean isCorruptPacket(Packet packet) {
     	int calculatedChecksum = 0;
     	calculatedChecksum += packet.getSeqnum();
@@ -267,6 +394,7 @@ public class StudentNetworkSimulator extends NetworkSimulator
     }
     
     private void startTimer() {
-    	startTimer(A, 25.0);
+    	startTimer(A, 130.0); // For 1000 messages
+//    	startTimer(A, 60.0);  // For 20 messages
     }
 }

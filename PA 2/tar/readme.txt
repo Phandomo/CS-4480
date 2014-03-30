@@ -1,6 +1,6 @@
 ###############################
 #                             #
-#    README for PA 2 - A      #
+#    README for PA 2 - B      #
 #                             #
 #    Student: Rob Johansen    #
 #    uNID: u0531837           #
@@ -13,7 +13,7 @@
 #                          #
 ############################
 
-1. Extract the "pa2_a.tar" file and verify that it produced eight .java files:
+1. Extract the "pa2_b.tar" file and verify that it produced eight .java files:
 
     Event.java
     EventList.java
