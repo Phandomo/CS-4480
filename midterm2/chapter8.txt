@@ -1,0 +1,134 @@
+8.1*
+
+- Be able to list and explain four desirable properties of secure communication.
+
+==========================================================================================
+1. Confidentiality (encryption)
+2. Message integrity (hash)
+3. End-point authentication (trust)
+4. Operational security (firewalls IDSs)
+==========================================================================================
+
+
+8.2*
+
+- Be able to explain the characters and terminology used in cryptography.
+
+==========================================================================================
+
+==========================================================================================
+
+
+8.2.1*
+
+- Be able to explain the basic functioning of symmetric key cryptography.
+- Be able to list and explain the types of attacks an intruder might use against an encryption scheme.
+- Be able to give an intuitive explanation of why block ciphers are needed to perform effective symmetric key cryptography.
+- Be able to explain the concept of cipher-block chaining.
+- Be able to explain how an initialization vector (IV) is used in cipher-block chaining.
+
+==========================================================================================
+Attacks:
+	- ciphertext-only  (statistical analysis)
+	- known-plaintext  (Trudy knows for sure that something is in the message)
+	- chosen-plaintext (Trudy gets Alice to send a specific message)
+
+
+==========================================================================================
+
+
+8.2.2**
+
+- Be able to explain the basic functioning of public key encryption/decryption.
+- Be able to use public/private key notion (Ka+,Ka-,m) to explain the function of public key encryption/decryption.
+
+8.3*
+
+- Be able to explain the concepts of message integrity.
+
+8.3.1*
+
+- Be able to explain the key property of a cryptographic hash function.
+
+8.3.2*
+
+- Be ale to explain what a message authentication code is and how one can be constructed and used. (Either through a prosaic explanation or by using a figure like figure 8.9).
+
+8.3.3**
+
+- Be able to explain what a digital signature is and how it could be used.
+- Be able to explain the concept of public key certification.
+- Be able to explain the function of a certification authority. (Either through a prosaic explanation or by using a figure like figure 8.14).
+
+8.4
+
+- Be able to explain what is mean with end-point authentication.
+
+8.4.5*
+
+- Be able to explain the interactions and components involved with an authentication protocol (like ap4.0).
+
+8.5
+
+8.5.1*
+
+- Be able to explain how symmetric key cryptography, public key cryptography, hash functions and digital signatures can be combined to provide secrecy, sender authentication and message integrity in a message passing application like email.
+
+8.6*
+
+- Be able to explain the purpose of the secure sockets layer and  where/how it fits in the protocol stack.
+
+8.6.1*
+
+- Be able to explain the "almost-SSL" handshake and the purpose of each message.
+- Be able to describe the key derivation process for "almost-SSL".
+- Be able to explain the data transfer phase of "almost-SSL".
+
+8.6.2*
+
+- Explain why the "real" SSL handshake involves the client and the server exchanging a MAC of all previous handshake messages.
+- Explain why the real SSL protocol makes use of an explicit connection closure message type.
+
+8.7
+
+- Be able to explain the type of security IPSec provides.
+- Be able to explain why (i) security at the networking level (IPSec) is useful, (ii) security at the networking level is not by itself sufficient for network security needs.
+
+8.7.1*
+
+- Be able to explain the concept of a virtual private network.
+- Be able to explain how IPSec can be used to create a VPN across the public Internet.
+
+8.8
+
+8.8.1
+
+- Be able to explain the steps involved with WEP authentication.
+- Be able to provide an intuitive explanation of why WEP ended
+up vulnerable to attack.
+
+8.8.2
+
+- Be able to explain the four phases of the 802.11i (WPA2) 
+protocol.
+
+8.9*
+
+- Be able to explain the purpose of firewall.
+- Be able to explain the weakness of the argument about the utility of firewalls presented in this section in the textbook.
+
+8.9.1*
+
+- Be able to explain the functioning of a firewall.
+- Be able to explain the functioning of a traditional firewall.
+- Be able to explain the functioning of a stateful firewall, how it differs from a "traditional" firewall and why that might be useful.
+
+8.9.2*
+
+- Be able to explain what deep packet inspection is.
+- Be able to explain the purpose of an intrusion detection system and an intrusion prevention system.
+- Be able to explain what a DMZ is and why it is used.
+
+
+
+

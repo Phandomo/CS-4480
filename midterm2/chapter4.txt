@@ -1,0 +1,375 @@
+4.1
+
+4.1.1*
+
+- Be able to explain the concepts of forwarding and routing and
+how they are related.
+
+==========================================================================================
+Forwarding is the router-local action of transferring a packet from an input link interface to the appropriate output link interface. And the appropriate interface is determined by the router's forwarding table.
+
+Routing is the network-wide process that determines the end-to-end paths that packets take from source to destination.
+==========================================================================================
+
+
+4.1.2
+
+- Be able to list and explain the possible service models that a network
+layers could provide.
+- Be able to explain the service model provided by the Internet network layer.
+
+4.2
+
+- Be able to explain the concepts of connectionless and connection-oriented
+network layers.
+- Be able to explain the parallel (and differences) between network-layer
+connection and connectionless service and transport layer connection-oriented and
+connectionless services.
+
+4.2.1
+
+- Be able to explain how forwarding takes place in a virtual-circuit network.
+- Be able to explain the phases involved with data transfer in a virtual-
+circuit network.
+
+4.2.2*
+
+- Be able to explain how forwarding takes place in a datagram network.
+- Be able to explain, through example, how address ranges can be captured through routing prefixes.
+- Be able to explain how routers use longest prefix matching to choose amongst different prefixes when performing forwarding.
+
+==========================================================================================
+To forward a packet, routers match a prefix of a packet's destination address with one of the entries in its forwarding table — with the longest match winning. If there is no match, the router forwards to its "default" interface (i.e. its own default gateway).
+==========================================================================================
+
+
+4.3*
+
+- Be able to list and describe the functionality of the components that make up a router.
+
+==========================================================================================
+The four components are...
+
+1. The input ports: terminate the incoming physical link and perform lookups in the forwarding table.
+
+2. Switch fabric: connects the input ports to the output ports.
+
+3. Output ports: stores packets from the switch fabric and transmits them on the outgoing link.
+
+4. Routing processor: executes the routing protocols, maintains routing tables, and computes forwarding tables.
+
+1-3 = forwarding plane
+  4 = control plane
+==========================================================================================
+
+
+
+4.3.1*
+
+- Be able to explain (possibly with the help of a simple diagram) the input port functionality of a router.
+
+==========================================================================================
+     __________________       ______________________       _____________________________
+--> | Line termination | --> | Data link processing | --> | Lookup, forwarding, queuing |
+     ------------------       ----------------------       -----------------------------
+==========================================================================================
+
+
+
+4.3.2*
+
+- Be able to list and explain the tree main ways in which router switching fabrics are realized.
+
+==========================================================================================
+1. memory - input port interrupts CPU, packet is copied into memory, CPU determines destination and copies packet into output port buffers.
+
+2. bus - input port adds label to packet and transfers directly to all output ports; only appropriate output port keeps packet. (Note: only one packet can cross the bus at a time.)
+
+3. interconnection network - each input port is connected to each output via a crossbar bus so that multiple packets can cross the bus simultaneously.
+==========================================================================================
+
+
+
+4.3.3*
+
+- Be able to explain (possibly with the help of a simple diagram) the output
+port functionality of a router.
+
+==========================================================================================
+     _____________________________       ______________________       __________________
+--> | Queuing (buffer management) | --> | Data link processing | --> | Line termination |
+     -----------------------------       ----------------------       ------------------
+==========================================================================================
+
+
+
+4.3.4*
+
+- Be able to explain why packet loss might occur in a router.
+- Be able to explain why (and where) queuing might occur in a router.
+- Be able to explain why head-of-line blocking might occur in a router.
+
+==========================================================================================
+Queuing and packet loss might occur at the input or output ports when no memory is available to store arriving packets.
+
+Head-of-line blocking is when a packet whose output port is open (i.e. has no packets queued) must wait because it is behind a packet destined for a different output port that is currently in use.
+==========================================================================================
+
+
+
+4.4
+
+- Be able to explain the four functions that make up the networking layer.
+
+4.4.1
+
+- Given the IP datagram format, be able to explain the purpose
+and function of each field.
+- Be able to explain why IP datagram fragmentation might happen.
+- Be able to explain, by using the appropriate fields in the IP datagram,
+how fragmentation and reassembly is done.
+
+4.4.2**
+
+- Be able to explain IP addressing using either binary or dotted decimal notation.
+- Be able to explain the concept of a subnet and how a subnet mask is used to represent address assignment in a subnet.
+- Be able to explain CIDR address assignment and contrast that with classful address assignment.
+- Be able to manipulate IP prefixes to perform address assignments.
+- Be able to explain the functionality of the DHCP protocol and why it is needed.
+- Be able to explain NAT functionality and why it is needed.
+
+==========================================================================================
+For addressing, remeber the example he drew on the board of using the 0 and the 1 of the mask. Also remember the ranges from your assignment.
+
+DHCP is 4 steps:
+
+1. Client sends DHCP discover (UDP port 67 to 255.255.255.255 with source 0.0.0.0).
+2. Server sends DHCP offer (with parameters) to 255.255.255.255
+3. Client sends DHCP request (echoing parameters)
+4. Server sends DHCP ACK
+
+Dont forget: DHCP can give a host its IP address, and subnet mask, and default gateway, and DNS servers!
+
+NAT works by creating a table of client/server connections that map client address/port and server address/port connections. The NAT router replaces the private source IP/port of outgoing requests with its own public IP/port.
+==========================================================================================
+
+
+
+
+4.4.3*
+
+- Be able to explain how ICMP fits in the protocol stack.
+- Be able to explain the functionality provided by ICMP.
+- Be able to explain the ICMP messages involved in realizing the traceroute tool.
+
+==========================================================================================
+The most common use for ICMP is error reporting. The well-known ping program also uses ICMP. ==========================================================================================
+
+
+
+4.4.4
+
+- Given the IPv6 datagram format, be able to explain the purpose
+and function of each field.
+- Be able to describe difference in the datagram format between
+IPv4 and IPv6.
+- Be able to explain how the transition from IPv4 to IPv6 is envisioned
+to happen.
+
+4.5*
+
+- Be able to explain how a graph representation can be used to reason about routing. And be able to use a graph representation to do that.
+- Be able to explain the functionality of and difference between a global routing algorithm and a decentralized routing algorithm.
+
+==========================================================================================
+The nodes in a graph represent the routers, while the edges represent the links.
+
+Global routing algorithms compute a least-cost path based on complete, global knowledge about the network.
+
+Decentralized routing algorithms iteratively calculate the least-cost path based on knowledge of directly attached links and exchanging information.
+==========================================================================================
+
+
+4.5.1*
+
+- Be able to explain, using pseudo code, the functionality of a link-state routing algorithm that uses Dijkstra's algorithm.
+- Given a graph representation of a network topology, be able to explain the steps involved in running the link-state algorithm.
+
+==========================================================================================
+Initialize:
+	Set the nodes N' to u (yourself)
+	Set all neighbor path costs
+	Set all other costs to infinity
+
+Loop:
+	Add node with the least cost to N' (node w)
+	Update all nodes (new costs are either old costs, or now include w)
+==========================================================================================
+
+
+4.5.2*
+
+- Be able to explain in a few sentences how the distance vector protocol works.
+- Be able to explain the Bellman-Ford equation and how it is used in the distance vector protocol calculation.
+- Given a graph representation of a network topology, be able to show the steps involved in running a distance vector protocol.
+- Be able to explain how the distance vector protocol react to link-cost changes and/or failures and how a link cost increase can lead to a routing loop.
+- Explain what "poisoned reverse" is, and how that can be used to prevent routing loops in distance vector protocol due to increases in link cost.
+- Be able to compare link state and distance vector routing algorithms.
+
+==========================================================================================
+Bellman-Ford says the least-cost path to some node y is the shortest distance to some neighbor v + the distance from v to y (for all neighbors v).
+
+Pseudo-code for distance vector:
+
+Initialize:
+	Set all neighbor costs
+	Set all other costs to infinity
+	Send your DV info to neighbors
+
+Loop:
+	wait for a neighbor to change link cost or to send DV info
+	for each node y in N, calculate the least-cost path
+	if your DV changed for any y, send it to all neighbors
+==========================================================================================
+
+
+
+4.5.3**
+
+- Be able to explain the concept of hierarchical routing and why it is used.
+- Be able to explain what an autonomous system is.
+- Be able to explain intra-AS routing versus inter-AS routing.
+- Be able to explain the concept of hot potato routing.
+- Be able to explain the interaction between intra-AS and inter-AS routing and how that is used to forward traffic. (E.g., with the use of Figure 4.33.)
+
+==========================================================================================
+An autonomous system is a group of routers under the same administrative control running the same intra-AS routing protocol.
+
+The two tasks of inter-AS routing (and gateway routers) are:
+	1. Obtain reachability from neighboring ASs
+	2. Propogate the reachability to all routers internal to an AS
+
+Hot-potato routing is when a router has more than one gateway that leads to the desired destination x, so it chooses the gateway with the least cost (get rid of the packet, as "quickly" as possible, like it's a hot potato), then update the forwarding table so that the interface which leads to the least-cost gateway maps to destination x.
+==========================================================================================
+
+
+
+4.6
+
+4.6.1*
+
+- Be able to name the intra-AS or inter-AS protocols that are typically used in the Internet.
+- Be able to explain the function of the Routing Information Protocol.
+- Be able to explain how RIP functionality, which is responsible for establishing network level forwarding tables, can be implemented at the application layer. (I.e., be able to explain Figure 4.39.)
+
+==========================================================================================
+intra-AS in the Internet: RIP, OSPF,
+inter-AS in the Internet: BGP
+
+RIP:
+	DV algorithm
+	uses hop count for cost
+	RIP advertisements usually happen every 30 seconds
+	Maintains a routing table (DV and forwarding table)
+==========================================================================================
+
+
+
+4.6.2*
+
+- Know the type of generic routing protocol OSPF implements.
+- Know where OSFP fits into the "protocol stack".
+- Be able to list and explain some of the advanced features of OSPF.
+
+==========================================================================================
+OSPF:
+	an LS protocol
+	OSPF advertisements are carried directly by IP
+	allows multiple least-cost paths
+	support for unicast, multicast
+	support for hierarchy in single routing domain
+==========================================================================================
+
+
+
+4.6.3**
+
+- Be able to explain the basic basic functionality that BGP provides to each AS.
+- Know what underlying protocol BGP uses and be able to explain the concept of a BGP peer.
+- Be able explain the difference between eBGP and iBGP and why both are needed.
+- Be able to explain the protocols, procedures and steps involved in giving a small company a "presence" on the Internet. (I.e., "Principles in practice" section on p. 392.)
+- Be able to explain the purpose and function of BGP AS-PATH and NEXT-HOP attributes.
+- Be able to explain the BGP selection process.
+- Be able to explain what is meant with routing policy and why ISPs require such functionality.
+
+==========================================================================================
+BGP basic functionality to each AS:
+	1. Get subnet reachability from neighboring ASs
+	2. Propogate this reachability to all routers in the AS
+	3. Determine "good" routes based on reachability and policy
+
+BGP uses TCP, and the routers at each end are BGP peers
+
+eBGP is between ASs
+iBGP is inside an AS
+
+BGP allows each AS to learn which CIDRized prefixes are reachable via neighboring ASs
+
+To obtain Internet presence:
+	1. You connect your gateway router to one of your ISP's routers
+	2. Your ISP gives you an IP address range
+	3. You acquire a domain name from a registrar and give it your DNS server IPs
+	4. Your ISP uses BGP to advertise your prefix to the Internet
+
+AS-PATH:
+	The ASs through with a prefix advertisement has passed
+	Helps avoid routing loops
+	Helps routers choose when there are multiple paths to the same prefix
+
+NEXT-HOP:
+	The router interface (the specific Ethernet card) that begins the AS-PATH
+
+If there are two or more routes to a prefix, BGP selects one as follows:
+	1. Highest local preference value (policy set by the AS's network admin)
+	2. Shortest AS-PATH
+	3. Closest NEXT-HOP
+	4. BGP identifiers
+
+BGP routing policy is just a peering agreement between ISPs about which routes are advertised between them (there are no standards governing how backbone ISPs route among themselves, and these peering agreements are confidential).
+==========================================================================================
+
+
+4.7*
+
+- Be able to explain the concepts of multicast and broadcast routing.
+
+==========================================================================================
+Broadcast routing allows a single source to deliver packets to all other network nodes
+
+Multicast allows a single source to deliver packets to a subset of other network nodes
+==========================================================================================
+
+
+
+4.7.1
+
+- Be able to explain the benefit of having in-network functionality
+to realize multi-recipient communication.
+- Be able to explain how broadcast can be realized through
+flooding (and why this is not a very good approach).
+- Be able to explain how controlled flooding can be realized
+through reverse path forwarding.
+- Be able to explain the concept of a spanning tree.
+- Be able to explain how a spanning tree can be constructed
+using a center-based approach.
+
+4.7.2
+
+- Be able to explain how multicast is realized in the Internet
+using multicast addresses and multicast groups.
+- Be able to explain the purpose of the IGMP protocol
+and why IGMP and a multicast routing protocol is required to
+make multicast work.
+- Be able to name common multicast routing protocols in use
+in the Internet.  
+
