@@ -1,5 +1,5 @@
 
-public class CipherTest {
+public class CipherTalk {
 	
 	private static String  address;
 	private static String  message;
