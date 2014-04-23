@@ -51,8 +51,10 @@ public class CipherTalk {
 			alicePrivateKey = kf.generatePrivate(spec);
 		}
 		
-		if (alicePrivateKey == null) error("Problem with Alice's private key...");
-		else print("Woohoo!");
+		if (alicePrivateKey == null)
+			error("Problem with Alice's private key...");
+		
+		// WYLO: Generate a hash of the message and sign it with Alice's private key...
 		
 		message = "-----BEGIN CipherTalk SIGNED MESSAGE-----\n" + message + "\n";
 		
