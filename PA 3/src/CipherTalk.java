@@ -138,7 +138,7 @@ public class CipherTalk {
 		//		 See this for int to 4 bytes: http://stackoverflow.com/questions/1936857/convert-integer-into-byte-array-java
 		//		 And this for 4 bytes to int: http://stackoverflow.com/questions/5616052/how-can-i-convert-a-4-byte-array-to-an-integer
 		//
-		//		 ...and remember that your Mac, Windows, and CADE boxes are all little-endian (so use .order(ByteOrder.LITTLE_ENDIAN) ? )
+		//		 ...and just do it in big-endian (i.e. don't worry about the order() method...)
 	}
 	
 	private static PublicKey loadPublicKey(String filename) throws FileNotFoundException,
