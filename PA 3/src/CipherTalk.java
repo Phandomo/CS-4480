@@ -15,8 +15,9 @@ public class CipherTalk {
 	
 	/* Keys */
 	private static final String ALICE_PRIVATE_KEY_FILENAME = "aliceprivate.der";
+	private static final String BOB_PUBLIC_KEY_FILENAME = "bobpublic.der";
 	private static PrivateKey alicePrivateKey;
-	private static byte[] symmetricKey;
+	private static PublicKey bobPublicKey;
 	
 	/* Message Hash */
 	private static byte[] messageHash;
@@ -24,12 +25,18 @@ public class CipherTalk {
 	/* Signature */
 	private static byte[] signature;
 	
+	/* Payload */
+	private static byte[] cipherText;
+	
 	public static void main(String[] args) throws FileNotFoundException,
 												  IOException,
 												  NoSuchAlgorithmException,
 												  InvalidKeySpecException,
 												  InvalidKeyException,
-												  SignatureException {
+												  SignatureException,
+												  NoSuchPaddingException,
+												  IllegalBlockSizeException,
+												  BadPaddingException {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-a") && args.length >= i)
 				address = args[i+1];
@@ -76,20 +83,7 @@ public class CipherTalk {
 		md.update(message);
 		messageHash = md.digest();
 		
-		File f = new File(ALICE_PRIVATE_KEY_FILENAME);
-		
-		if (!f.exists())
-			error("Alice's private key is missing: "+ALICE_PRIVATE_KEY_FILENAME);
-		
-		try(FileInputStream fis = new FileInputStream(f);
-			DataInputStream dis = new DataInputStream(fis)) {
-			byte[] keyBytes = new byte[(int)f.length()];
-			dis.readFully(keyBytes);
-			
-			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
-			KeyFactory kf = KeyFactory.getInstance("RSA");
-			alicePrivateKey = kf.generatePrivate(spec);
-		}
+		alicePrivateKey = loadPrivateKey(ALICE_PRIVATE_KEY_FILENAME);
 		
 		if (alicePrivateKey == null)
 			error("Problem with Alice's private key...");
@@ -102,17 +96,85 @@ public class CipherTalk {
 		signature = rsa.sign();
 	}
 	
-	private static void encryptMessage() throws NoSuchAlgorithmException {
-		// WYLO: Combine the hash, signature, and message so they can be encrypted with a 3DES symmetric key
+	private static void encryptMessage() throws NoSuchAlgorithmException,
+												NoSuchPaddingException,
+												InvalidKeyException,
+												IllegalBlockSizeException,
+												BadPaddingException,
+												FileNotFoundException,
+												InvalidKeySpecException,
+												IOException {
+		byte[] messageParts = new byte[messageHash.length + signature.length + message.length];
 		
+		int hLength = messageHash.length;
+		int sLength = signature.length;
+		int mLength = message.length;
+		
+		System.arraycopy(messageHash, 0, messageParts, 0,       hLength);
+		System.arraycopy(signature,   0, messageParts, hLength, sLength);
+		System.arraycopy(message,     0, messageParts, hLength + sLength, mLength);
 		
 		vout("Generating a 3DES symmetric key");
 		
 		KeyGenerator keyGenerator = KeyGenerator.getInstance("DESede");
 		SecretKey tripleDesKey = keyGenerator.generateKey();
-		symmetricKey = tripleDesKey.getEncoded();
 		
+		vout("Encrypting hash, signature, and message to 3DES key");
 		
+		Cipher cipher = Cipher.getInstance("DESede/ECB/PKCS5Padding");
+		cipher.init(Cipher.ENCRYPT_MODE, tripleDesKey);
+		cipherText = cipher.doFinal(messageParts);
+		
+		vout("Encrypting the 3DES key to Bob's key");
+		
+		bobPublicKey = loadPublicKey(BOB_PUBLIC_KEY_FILENAME);
+		cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+		cipher.init(Cipher.ENCRYPT_MODE, bobPublicKey);
+		byte[] symmetricKey = cipher.doFinal(tripleDesKey.getEncoded());
+		
+		print("Size of encrypted symmetric key in bytes: "+symmetricKey.length);
+		
+		// WYLO: Figure out how to store the size of the symmetric key in the first 4 bytes...
+	}
+	
+	private static PublicKey loadPublicKey(String filename) throws FileNotFoundException,
+																   IOException,
+																   NoSuchAlgorithmException,
+																   InvalidKeySpecException {
+		File f = new File(filename);
+		
+		if (!f.exists())
+			error("Public key is missing: "+filename);
+		
+		try(FileInputStream fis = new FileInputStream(f);
+			DataInputStream dis = new DataInputStream(fis)) {
+			byte[] keyBytes = new byte[(int)f.length()];
+			dis.readFully(keyBytes);
+			
+			X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+			KeyFactory kf = KeyFactory.getInstance("RSA");
+			return kf.generatePublic(spec);
+		}
+	}
+	
+	private static PrivateKey loadPrivateKey(String filename) throws FileNotFoundException,
+																	 IOException,
+																	 NoSuchAlgorithmException,
+																	 InvalidKeySpecException {
+		File f = new File(filename);
+		
+		if (!f.exists())
+			error("Private key is missing: "+filename);
+		
+		try(FileInputStream fis = new FileInputStream(f);
+			DataInputStream dis = new DataInputStream(fis)) {
+			byte[] keyBytes = new byte[(int)f.length()];
+			dis.readFully(keyBytes);
+			
+			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
+			KeyFactory kf = KeyFactory.getInstance("RSA");
+			return kf.generatePrivate(spec);
+		}
 	}
 	
 	private static void vout(String text) {
