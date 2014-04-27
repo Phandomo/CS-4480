@@ -1,0 +1,92 @@
+
+6.2*
+
+- Be able to list and describe three ways in which wireless links differ from wired links.
+- Be able to give an intuitive explanation for SNR and BER.
+- Be able to explain the relationship between SNR and BER for different modulation schemes and how these relationships might be exploited to provide the best transmission for a given wireless channel.
+- Be able to explain hidden terminal and fading and how that can impact wireless transmission.
+
+==========================================================================================
+1. Decreased signal strength due to attenuation.
+2. Interference from other radio sources in the same frequency.
+3. Multipath propagation (portion of signal bounces off ground, taking longer path)
+
+- SNR is signal-to-noise ratio (the higher the better)
+- BER is the bit error rate (probability that a transmitted bit is received in error)
+
+- BPSK has the lowest SNR and BER, but also the lowest Mbps
+- QAM16 is the sweet spot at 20 dB
+- QAM256
+
+- hidden terminal is when A and C are obstructed (e.g. by a mountain), but their signals interfere with each other as they both communicate with B
+
+- fading is when A and C are too far apart to interfere with each other (not obstructed), but their signals interfere as they communicate with B (which is between A and C)
+==========================================================================================
+
+
+6.3.1*
+
+- Be able to explain the terminology associated with an 802.11 LAN.
+- Be able the explain the procedure whereby wireless stations associate with wireless access points.
+
+==========================================================================================
+basic service set - one or more wireless stations and a central access point
+infrastructure wireless LAN - a wireless LAN that has an AP
+service set identifier (SSID) - a name assigned to an AP, used during association
+
+- Association means a station creates a virtual wire between itself and the AP. It happens as APs send so-called beacon frames including the AP's SSID and MAC, while wireless stations scan the 11 channels and select an AP.
+==========================================================================================
+
+
+6.3.2*
+
+- Be able to explain the 802.11 MAC protocol.
+- Be able to explain why it would not make sense for the 802.11 family of protocols (Wifi) to make use of "collision detect" like the 802.3 family of protocols (Ethernet).
+- Be able to explain how 802.11 RTS and CTS mechanism functions and why it is useful in a wireless environment.
+
+==========================================================================================
+- 802.11 (CSMA/CA) is just like 802.3 (CSMA/CD) except (a) it doesn't support collision detection, and (b) it backs off randomly after successful frame transmission (in an effort to avoid collision)
+
+- Collision detection in 802.11 doesn't make sense because:
+	+ It is costly to build hardware that can detect the weaker received signals
+	+ Not all collisions can be detectable due to hidden terminal and fading
+
+- RTS and CTS allow a station to effectively reserve the AP (via an RTS frame) so it can transmit, while other stations must wait an amount of time specified in the CTS frame
+==========================================================================================
+
+
+6.3.3*
+
+- Be able to explain why the 802.11 frame has four address fields.
+- Be able to explain how the first three addresses are used together with ARP in a topology consisting of wireless stations, APs and routers.
+
+==========================================================================================
+1. The MAC address of the destination
+2. The MAC address of the sender
+3. The MAC address of the router connecting this subnet to other subnets
+4. For APs to forward frames to each other in ad-hoc mode
+
+- The router uses ARP to get the MAC address of the host, then sends a frame to the AP. The AP converts the frame from 802.3 to 802.11 and sets address 3 to be the MAC address of the router (this allows the host to get the MAC address of the router).
+==========================================================================================
+
+
+6.3.4*
+
+- Be able to explain how mobility between two wifi basic service sets (BSSs) or coverage regions can be accomplished without the wireless station requiring to change its IP address.
+
+==========================================================================================
+- As the station detects a weakening signal from AP1, it starts to scan for a stronger signal and discovers AP2. It then disassociates from AP1 and associates with AP2, keeping its IP address and TCP connections. AP2 then sends a broadcast frame containing the station's MAC address so the switch updates its forwarding table.
+==========================================================================================
+
+
+6.3.5*
+
+- Be able to explain 802.11 rate adaptation mechanism.
+- Be able to explain 802.11 power management feature.
+
+==========================================================================================
+- Rate adaptation is a technique implemented by some 802.11 providers whereby the physical layer selects the appropriate modulation technique (e.g. BPSK, QAM16, QAM256) based on channel characteristics. For example, as you walk farther away from your AP, the modulation technique changes to accommodate your new distance.
+
+- For power management, a station can set a sleep bit in a frame and then turn off its sensing, transmitting, and receiving. The AP then buffers frames destined for that station. The station wakes up right before the AP sends its next beacon, and checks the beacon to see if the AP is buffering any frames destined for that station. If not, the station can go back to sleep. Otherwise, the station wakes up and requests the buffered frames.
+==========================================================================================
+

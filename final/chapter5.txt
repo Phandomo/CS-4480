@@ -1,0 +1,141 @@
+
+5.1.2*
+
+- Be able to explain where/how in a computer system the link layer is implemented.
+
+==========================================================================================
+In a router, the link layer is implemented in the line card.
+
+In an end host, the link layer is mostly implemented in the network adapter. The heart of the network adapter is a controller, which is a single chip. Thus, much of an end host's link layer is implemented in hardware. However, part of an end host's link layer is also implemented in software that runs on the CPU.
+==========================================================================================
+
+
+5.3.1*
+
+- Be able to explain three forms of channel partitioning protocols.
+
+==========================================================================================
+1. Time      (TDM  or time-division multiplexing)
+2. Frequency (FDM  or frequency-division multiplexing)
+3. Code      (CDMA or code division multiple access)
+==========================================================================================
+
+
+5.3.2*
+
+- Be able to explain the operation of a CSMA/CD access protocol.
+- Be able to explain the  purpose of the binary exponential backoff algorithm used in Ethernet.
+
+==========================================================================================
+CSMA/CD - (carrier sense multiple access / collision detection) A node listens to the channel and waits for silence before transmitting. When a node starts transmitting, it continues listening for transmissions from other nodes. If it detects a transmission from another node, it stops transmitting and waits a random amount of time before trying again.
+
+binary exponential backoff - Defines the random way in which a node detecting collisions waits until attempting to transmit again. The random number is chosen from the set of {0..2^n - 1}, where n is the number of collisions for a given frame. Because n is used as a power, the set of possible backoff times grows exponentially with each collision detection.
+==========================================================================================
+
+
+5.3.3*
+
+- Be able to name and explain two types of taking-turns protocol.
+
+==========================================================================================
+polling - One node is designated as the master. It polls the other nodes in the channel, telling them when they can transmit. There are 2 drawbacks: polling delay (the time required for the master to poll a node), and the master is a single point of failure.
+
+token-passing - the nodes pass around a special "token" frame. When a node gets the token, it transmits frames then passes the token. There are 2 drawbacks: A failure of one node can crash the channel, and a buggy node might forget to pass on the token.
+==========================================================================================
+
+
+5.4.1**
+
+- Be able to explain where in a LAN environment one might find MAC addresses.
+- Be able to explain why networked devices need to have MAC addresses (when they already have IP addresses).
+- Be able to explain the purpose of the address resolution protocol and where it is used.
+- Be able to explain how the ARP protocol works in a switch environment.
+
+==========================================================================================
+- MAC addresses are found on the network adapters of hosts and routers.
+
+- An IP address would have to be stored in the RAM of the network adapter and reconfigured every time the adapter moves. In addition, without a MAC address, each host would have to pass all frames up to the network layer before knowing whether a frame was destined for that host.
+
+- ARP provides a mapping of MAC addresses to IP addresses. It is used when a packet is destined for the interface of another host/router on the same subnet.
+
+- In a switch environment, the switch maintains a table that maps host MAC addresses to the interfaces of the switch. This allows the switch to forward packets only to the appropriate interface.
+==========================================================================================
+
+
+5.4.2*
+
+- Be able to explain the purpose of the fields in the Ethernet frame structure. (Assume the frame structure will be provided.)
+- Be able to explain why in modern Ethernet environments there is no real need for a MAC protocol.
+
+==========================================================================================
+
+            |  Preamble  |  Destination Address  |  Type  |  Data  |  CRC  |
+
+preamble - wakes up the receiving adapter with 7 identical bytes, then a 1 on the 8th byte
+
+destination address - the MAC address of the destination adapter
+
+type - the type of network-layer protocol (e.g. IP, IPX, or AppleTalk)
+
+data - the IP datagram
+
+CRC - for detecting bit errors in the frame
+
+- There is no need for a MAC protocol because switches prevent collisions
+==========================================================================================
+
+
+5.4.3**
+
+- Be able to explain "filtering" and "forwarding" in the context of link-layer switches.
+- Explain the self-learning property of link-;ayer switches.
+- Be able to list and explain three benefits of switches (compared to hubs).
+- Be able to reason about the benefits and tradeoffs between switches and routers.
+
+==========================================================================================
+- filtering is when the switch determines whether a frame should be forwarded to some interface
+
+- forwarding is when the switch determines which interface to send a frame to (and then sending it)
+
+1. Switches eliminate collisions.
+2. Switches support different link speeds and media.
+3. Switches need no configuring and can isolate network problems (like jabbering adapters)
+
+- switches need no configuration but are susceptible to broadcast storms; routers require configuration but support best paths.
+==========================================================================================
+
+
+5.4.4*
+
+- Be able to explain the concept of VLANs.
+- Be able to explain the concept of VLAN trunking and where that might be used.
+
+==========================================================================================
+- VLANs group physical ports on the same switch into different (virtual) LANs, isolating each VLAN's traffic to only its designated ports.
+
+- VLAN trunking allows two switches to be interconnected via two trunk ports that belong to all VLANs. This is useful when two disparate physical locations must be part of the same VLAN.
+==========================================================================================
+
+
+5.5.1*
+
+- Be able to explain why we might think of MPLS as a blending of virtual circuit and datagram forwarding paradigms.
+- Be able to explain how forwarding in a label-switched router is done.
+- Be able to suggest possible labels for the forwarding tables of a small MPLS network.
+- Be able to explain how MPLS labels are chosen and distributed in a real network.
+- Be able to name and explain at least two benefits (or use cases) for MPLS networks.
+
+==========================================================================================
+- MPLS (Multiprotocol Label Switching) uses a combination of IP addresses and labels to direct packets to destinations. The label is like a virtual circuit identifier, and allows a router to forward to an interface without needing to inspect the IP datagram.
+
+- Benefits of MPLS include multiple routes to a destination, and VPN.
+==========================================================================================
+
+
+5.7**
+
+- Be able to explain the steps and protocols involved with the scenario where a laptop is connected to a wired network and the user starts up a browser to download a web page.
+
+==========================================================================================
+Just read the whole section again...
+==========================================================================================
