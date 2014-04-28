@@ -1,8 +1,11 @@
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.security.*;
 import java.security.spec.*;
 
 import javax.crypto.*;
+import javax.crypto.spec.SecretKeySpec;
 
 public class CipherTalk {
 	
@@ -27,6 +30,13 @@ public class CipherTalk {
 	
 	/* Payload */
 	private static byte[] cipherText;
+	private static byte[] payload;
+	
+	/* ===================== */
+	/*     Bob Variables     */
+	/* ===================== */
+	private static final String BOB_PRIVATE_KEY_FILENAME = "bobprivate.der";
+	private static PrivateKey bobPrivateKey;
 	
 	public static void main(String[] args) throws FileNotFoundException,
 												  IOException,
@@ -59,7 +69,8 @@ public class CipherTalk {
 		if (messageString == null || messageString.length() == 0)
 			error("Missing argument: -m <message>");
 		
-		message = messageString.getBytes();
+//		message = messageString.getBytes();
+		message = messageString.getBytes("UTF-8");
 		
 		vout("\n========================================\n"
 		     + "    Starting CipherTalk Transmission\n"
@@ -67,6 +78,7 @@ public class CipherTalk {
 		
 		signMessage();
 		encryptMessage();
+		decryptMessage(); // TODO: Make this part of Bob's program...
 		
 		vout(""); // If output is verbose, add a new line at the very end
 	}
@@ -104,11 +116,11 @@ public class CipherTalk {
 												FileNotFoundException,
 												InvalidKeySpecException,
 												IOException {
-		byte[] messageParts = new byte[messageHash.length + signature.length + message.length];
-		
 		int hLength = messageHash.length;
 		int sLength = signature.length;
 		int mLength = message.length;
+		
+		byte[] messageParts = new byte[hLength + sLength + mLength];
 		
 		System.arraycopy(messageHash, 0, messageParts, 0,       hLength);
 		System.arraycopy(signature,   0, messageParts, hLength, sLength);
@@ -125,20 +137,92 @@ public class CipherTalk {
 		cipher.init(Cipher.ENCRYPT_MODE, tripleDesKey);
 		cipherText = cipher.doFinal(messageParts);
 		
-		vout("Encrypting the 3DES key to Bob's key");
+		vout("Encrypting the 3DES key to Bob's public key");
 		
 		bobPublicKey = loadPublicKey(BOB_PUBLIC_KEY_FILENAME);
 		cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, bobPublicKey);
 		byte[] symmetricKey = cipher.doFinal(tripleDesKey.getEncoded());
 		
-		print("Size of encrypted symmetric key in bytes: "+symmetricKey.length);
+		/*
+		 * The first four bytes of the payload will be the size of the symmetric key.
+		 * This will allow Bob's version of the program to follow a simple algorithm
+		 * after receiving the payload:
+		 * 
+		 * 1. Read the first four bytes to determine the size of the symmetric key, N.
+		 * 2. Read the next N bytes to obtain the encrypted symmetric key.
+		 * 3. Read the remaining bytes to obtain the ciphertext.
+		 */
 		
-		// WYLO: Figure out how to store the size of the symmetric key in the first 4 bytes...
-		//		 See this for int to 4 bytes: http://stackoverflow.com/questions/1936857/convert-integer-into-byte-array-java
-		//		 And this for 4 bytes to int: http://stackoverflow.com/questions/5616052/how-can-i-convert-a-4-byte-array-to-an-integer
-		//
-		//		 ...and just do it in big-endian (i.e. don't worry about the order() method...)
+		ByteBuffer buffer = ByteBuffer.allocate(4);
+		buffer.putInt(symmetricKey.length);
+		byte[] symmetricKeySize = buffer.array();
+		
+		int kLength = symmetricKeySize.length;
+		int tLength = symmetricKey.length;
+		int cLength = cipherText.length;
+		
+		payload = new byte[kLength + tLength + cLength];
+		
+		System.arraycopy(symmetricKeySize, 0, payload, 0,       kLength);
+		System.arraycopy(symmetricKey,     0, payload, kLength, tLength);
+		System.arraycopy(cipherText,       0, payload, kLength + tLength, cLength);
+	}
+	
+	private static void decryptMessage() throws FileNotFoundException,
+												NoSuchAlgorithmException,
+												InvalidKeySpecException,
+												IOException,
+												NoSuchPaddingException,
+												InvalidKeyException,
+												IllegalBlockSizeException,
+												BadPaddingException {
+		byte[] symmetricKeySizeBytes = new byte[4];
+		
+		for (int i = 0; i < 4; i++) {
+			symmetricKeySizeBytes[i] = payload[i];
+		}
+		
+		int symmetricKeySize = ByteBuffer.wrap(symmetricKeySizeBytes).getInt();
+		
+		byte[] encryptedSymmetricKey = new byte[symmetricKeySize];
+		
+		for (int i = 4, j = 0; i < 4 + symmetricKeySize; i++, j++) {
+			encryptedSymmetricKey[j] = payload[i];
+		}
+		
+		vout("Decrypting the 3DES key with Bob's private key");
+		
+		bobPrivateKey = loadPrivateKey(BOB_PRIVATE_KEY_FILENAME);
+		Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+		cipher.init(Cipher.DECRYPT_MODE, bobPrivateKey);
+		byte[] symmetricKey = cipher.doFinal(encryptedSymmetricKey);
+		
+		vout("Decrypting the ciphertext using the 3DES key");
+		
+		SecretKey tripleDesKey = new SecretKeySpec(symmetricKey, "DESede");
+		cipher = Cipher.getInstance("DESede/ECB/PKCS5Padding");
+		cipher.init(Cipher.DECRYPT_MODE, tripleDesKey);
+		
+		byte[] encryptedMessageParts = new byte[payload.length - symmetricKeySize - 4];
+		
+		for (int i = 4 + symmetricKeySize, j = 0; i < payload.length; i++, j++) {
+			encryptedMessageParts[j] = payload[i];
+		}
+		
+		byte[] plainText = cipher.doFinal(encryptedMessageParts);
+		
+		// TODO: Get the hash (20 bytes)
+		
+		// TODO: Get the signature (128 bytes)
+		
+		for (int i = 20 + 128, j = 0; i < plainText.length; i++, j++) {
+			message[j] = plainText[i];
+		}
+		
+		String messageText = new String(message, "UTF-8");
+		
+		print ("The message is: "+messageText);
 	}
 	
 	private static PublicKey loadPublicKey(String filename) throws FileNotFoundException,
