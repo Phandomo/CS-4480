@@ -1,239 +1,144 @@
-Note: By "reason about" I mean understand something well enough
-that you can argue its pros and cons, not just give a definition.
-Also, where applicable, "reason about" would include reproducing and using
-the symbolic definitions (or equations) you have used in the homework
-problems.
-
-1.1
-
-1.1.1
-
-- Know the terminology of components and role-players that make up the Internet.
-
-+ hosts or end systems
-+ servers
-+ routers (circular)
-+ switches (square)
-+ modems
-+ base stations (wireless)
-+ cell towers
-
-
-1.1.2
-
-- Understand and be able to explain concepts behind distributed 
-applications and APIs as it relates to the Internet.
-
-+ distributed applications involve multiple end systems that exchange data with each other (e.g. email, web, social networks)
-+ API in this context defines a set of rules for how a program asks the Internet to deliver data to a destination
-
 
 1.1.3*
 
 - Be able to define what is meant with a network protocol.
-- Be able to design and explain network protocols to achieve
-certain functionality using a ladder diagram. (Like in Figure 1.2).
+- Be able to design and explain network protocols to achieve certain functionality using a ladder diagram. (Like in Figure 1.2).
 
-+ A network protocol defines the format and order of messages exchanged between two or more communicating entities, as well as the actions taken on transmission/receipt of a message or event.
-+ Figure 1.2 is the "human protocol" example of saying hi and asking for the time
+==========================================================================================
+- A network protocol defines the format and order of messages exchanged between two or more communicating entities, as well as the actions taken on transmission/receipt of a message or event.
 
+- Figure 1.2 is the "human protocol" example of saying hi and asking for the time
+==========================================================================================
 
-1.2
-
-1.2.1
-
-- Be able to explain the basic working of and differences between
-different access network technologies. Including typical up- and
-down-link speeds for each.
-
-+ DSL = existing telephone line (twisted-pair copper); 12-24 Mbps down and 1.8-2.5 Mbps up
-+ cable = fiber to neighborhood, coax to homes (hybrid fiber coax (HFC)); 42.8 Mbps down and 30.7 Mbps up
-+ FTTH = fiber to the home (Google Fiber!)
-
-
-- Be able to explain the basic workings of enterprise and home
-networking technologies. Including typical link speeds.
-
-+ Ethernet with 100 Mbps, 1 Gbps, or 10 Gbps
-+ 802.11 with 54 Mbps shared
-+ 3G with 1 Mbps
-+ LTE with 10 Mbps
-
-
-1.2.2
-
-- Be able to describe the workings and tradeoff of different 
-physical media.
-
-+ guided = wired
-+ unguided = waves
-+ twisted-pair copper = least expensive and most used
-+ coax = shared medium of copper conductors
-+ fiber optics = excellent for long distances
-+ earth and satellite radios
-
-
-1.3
 
 1.3.1*
 
-- Be able to explain the devices and mechanisms involved in packet
-switched networks.
+- Be able to explain the devices and mechanisms involved in packet switched networks.
+- Be able to reason about the transmission delay experienced in a packet switched network based on the packet length and transmission rate.
+- Be able to explain why queueing delay and packet loss might occur in a packet switched network.
+- Be able to explain the relationship between forwarding and routing in a packet switched network.
 
-+ packet switching using store-and-forward transmission (routers and link-layer switches)
+==========================================================================================
+- packet switching uses store-and-forward transmission (routers and link-layer switches)
 
+- a packet of L bits sent over a link with transmission rate R bits/sec takes L/R seconds to transmit
 
-- Be able to reason about the transmission delay experienced in a packet switched
-network based on the packet length and transmission rate.
+- a packet is queued when the output buffer of a router is busy; packet loss occurs when the buffer/queue are completely full
 
-+ a packet of L bits sent over a link with transmission rate R bits/sec takes L/R seconds to transmit
-
-
-- Be able to explain why queueing delay and packet loss might occur in a
-packet switched network.
-
-+ a packet is queued when the output buffer of a router is busy
-+ packet loss occurs when the buffer/queue are completely full
-
-
-- Be able to explain the relationship between forwarding and routing
-in a packet switched network.
-
-+ each router has a forwarding table that maps destination addresses to its outbound links
-
-
-1.3.2
-
-- Be able to explain the workings of a circuit switched network.
-
-+ resources are reserved for the duration of the communication session
-
-
-- Be able to explain how frequency-division multiplexing and time-division
-multiplexing relate to circuit switched networks.
-
-+ FDM = spectrum divided among connections
-+ TDM = time is divided into frames of fixed duration
-
-
-- Be able to explain the tradeoffs between packet and circuit switched
-networks and the conditions under which either approach would be favored
-over the other.
-
-+ circuit switching = better at phone/voice services
-+ packet switching = better sharing of capacity, more efficient, and less costly
+- each router has a forwarding table that maps destination addresses to its outbound links
+==========================================================================================
 
 
 1.3.3**
 
-- Be able to explain the structure and role players involved in the global
-Internet.
+- Be able to explain the structure and role players involved in the global Internet.
 
+==========================================================================================
 + end systems connect via access ISPs
 + access ISPs connect to regional ISPs
 + regional IPSs connect to tier-1 ISPs
 + multiple ISPs peer together at an IXP (Internet eXchange Point)
-+ don't forget about content provider networks (e.g. Google)
++ don't forget about content provider networks (e.g. Google, your future employer)
+==========================================================================================
 
-
-1.4**
 
 1.4.1**
 
-- Be able to define and reason about the different kinds of delay that can be
-experienced in packet switched network.
+- Be able to define and reason about the different kinds of delay that can be experienced in packet switched network.
+- Be able to explain under what conditions the relative contribution of different delay components would be more prominent.
 
-+ processing delay   = time to examine a packet's header and determine where to direct it
-+ queuing delay      = time waiting to be transmitted
-+ transmission delay = time to transmit all of a packet's bits into a link
-+ propagation delay  = time travel across a link
+==========================================================================================
+- processing delay   = time to examine a packet's header and determine where to direct it
+- queuing delay      = time waiting to be transmitted
+- transmission delay = time to transmit all of a packet's bits onto a link
+- propagation delay  = time to travel across a link
 
-
-- Be able to explain under what conditions the relative contribution
-of different delay components would be more prominent.
-
-+ the longer the link, the greater the propagation delay
+- the longer the link, the greater the propagation delay
+==========================================================================================
 
 
 1.4.2**
 
 - Be able to define traffic intensity and its relation to queueing delay.
 
-+ a = average packet arrival rate (packets/sec)
-+ L = size of packet in bits
-+ R = transmission rate
-+ if La/R > 1, then bits are arriving faster than they can be transmitted
+==========================================================================================
+- a = average packet arrival rate (packets/sec)
+- L = size of packet in bits
+- R = transmission rate
+- if La/R > 1, then bits are arriving faster than they can be transmitted
+==========================================================================================
 
 
 1.4.3**
 
-- Be able to express and reason about the end-to-end delay as a function of
-the individual nodal delays.
+- Be able to express and reason about the end-to-end delay as a function of the individual nodal delays.
+- Be able to explain how the traceroute tool output is produced (under the hood) and be able to interpret the output of a traceroute run.
 
-+ delay_end = N(delay_proc + delay_trans + delay_prop)
+==========================================================================================
+- delay_end = N(delay_proc + delay_trans + delay_prop)
 
                        ... or ...
 
-+ delay_end = N(delay_proc + L/R + delay_prop)
+- delay_end = N(delay_proc +     L/R     + delay_prop)
 
-
-- Be able to explain how the traceroute tool output is produced (under the hood)
-and be able to interpret the output of a traceroute run.
-
-+ the source sends 3 packets addressed to the destination
-+ each router along the way sends a message back to the source
-+ the source records the times and hops
-
-+ The output follows this pattern...
+- the source sends 3 packets addressed to the destination
+- each router along the way sends a message back to the source
+- the source records the times and hops
+- and the output follows this pattern...
 
     n router-name (IP address) RTT1 RTT2 RTT3
 
 ...where n is the router's number in the hop list
+==========================================================================================
 
 
 1.4.4**
 
-- Be able to explain and reason about the concepts of throughput and bottleneck
-links in computer networks.
+- Be able to explain and reason about the concepts of throughput and bottleneck links in computer networks.
 
-+ instantaneous throughput is the rate at which data is being received at any instant of time
-+ average throughput is: F bits / T sec
-+ bottleneck link is the minimum rate of all the link rates
+==========================================================================================
+- instantaneous throughput is the rate at which data is being received at any given instant in time
+- average throughput is: F bits / T sec
+- bottleneck link is the minimum rate of all the link rates
+==========================================================================================
 
-
-1.5
 
 1.5.1*
 
 - Be able to explain the concept of a layered architecture in computer networks.
-- Be able to list and describe the basic functionality of the layers
-in the Internet protocol stack.
+- Be able to list and describe the basic functionality of the layers in the Internet protocol stack.
 
-+ application -> transport -> network -> link -> physical
+==========================================================================================
+- application -> transport ->   network  ->   link  -> physical
+   (message)     (segment)    (datagram)    (frame)
+==========================================================================================
 
 
 1.5.2*
 
-- Be able to explain the concept of encapsulation and how it applies in the
-Internet layered architecture.
+- Be able to explain the concept of encapsulation and how it applies in the Internet layered architecture.
 
-+ each layer adds a header with its own message on the way out, then reads/strips that message on the way in
+==========================================================================================
+- each layer adds a header with its own message on the way out, then reads/strips that message on the way in
+==========================================================================================
 
 
 1.6*
 
-- Be able to explain examples of how bad guys might attack endpoints
-and the network and the communication it enables.
+- Be able to explain examples of how bad guys might attack endpoints and the network and the communication it enables.
 
-+ DoS
-+ DDoS
+==========================================================================================
+- DoS
+- DDoS
+==========================================================================================
 
 
 1.7
 
-- Know the number and location of the first nodes of the ARPAnet and the
-first function that was performed and its result. (And take heart...)
+- Know the number and location of the first nodes of the ARPAnet and the first function that was performed and its result. (And take heart...)
 
-+ four nodes: UCLA, Stanford, UCSB, and UofU
+==========================================================================================
+- four nodes: UCLA, Stanford, UCSB, and UofU
+==========================================================================================
 
 

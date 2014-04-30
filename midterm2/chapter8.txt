@@ -15,7 +15,7 @@
 - Be able to explain the characters and terminology used in cryptography.
 
 ==========================================================================================
-
+You got this...
 ==========================================================================================
 
 
@@ -28,12 +28,14 @@
 - Be able to explain how an initialization vector (IV) is used in cipher-block chaining.
 
 ==========================================================================================
-Attacks:
+- Attacks:
 	- ciphertext-only  (statistical analysis)
-	- known-plaintext  (Trudy knows for sure that something is in the message)
+	- known-plaintext  (Trudy knows that something is in the message)
 	- chosen-plaintext (Trudy gets Alice to send a specific message)
 
+- A block cipher breaks the message into 64-bit blocks and encrypts each block independently. The cipher uses a one-to-one mapping of cleartext blocks to ciphertext blocks. The number of possible mappings is 2^k! where k is the number of bits in the block. In other words, each mapping is a key (so both parties must know the key).
 
+- To prevent identical cleartext blocks from producing identical ciphertext blocks, cipher-block chaining introduces randomness by generating a k-bit string, called the Initialization Vector (IV), sending it to the receiver in cleartext, then XORing it with the cleartext blocks before encryption. 
 ==========================================================================================
 
 
@@ -42,17 +44,42 @@ Attacks:
 - Be able to explain the basic functioning of public key encryption/decryption.
 - Be able to use public/private key notion (Ka+,Ka-,m) to explain the function of public key encryption/decryption.
 
+==========================================================================================
++ = public
+- = private
+==========================================================================================
+
+
 8.3*
 
 - Be able to explain the concepts of message integrity.
+
+==========================================================================================
+- The message indeed originated from Alice
+- The message was not altered in transit
+==========================================================================================
+
 
 8.3.1*
 
 - Be able to explain the key property of a cryptographic hash function.
 
+==========================================================================================
+- It is computationally infeasible to find any two different messages x and y such that hash(x) = hash(y)
+==========================================================================================
+
+
 8.3.2*
 
 - Be ale to explain what a message authentication code is and how one can be constructed and used. (Either through a prosaic explanation or by using a figure like figure 8.9).
+
+==========================================================================================
+- A message authentication code (MAC) uses a shared secret s in conjunction with a hash to provide integrity.
+
+1. Alice creates message m, concatenates secret s, computes hash(m + s), and sends (m, hash(m + s)) to Bob
+2. Bob, knowning s, computes hash(m + s). If the result equals the hash(m + s) sent by Alice, we're good
+==========================================================================================
+
 
 8.3.3**
 
@@ -60,23 +87,42 @@ Attacks:
 - Be able to explain the concept of public key certification.
 - Be able to explain the function of a certification authority. (Either through a prosaic explanation or by using a figure like figure 8.14).
 
-8.4
+==========================================================================================
+- A digitial signature is created by hashing the message and then encrypting the hash using the sender's private key. The recipient then uses the sender's public key to decrypt the hash and compare it to a hash of the message.
 
-- Be able to explain what is mean with end-point authentication.
+- A certification authority creates a certificate, binds Bob's public key to it, then digitally signs the certificate (you trust the CA, so you know it's actually Bob's public key)
+==========================================================================================
+
 
 8.4.5*
 
 - Be able to explain the interactions and components involved with an authentication protocol (like ap4.0).
 
-8.5
+==========================================================================================
+1. Alice gives her username to Bob.
+2. Bob sends a nonce, R, to Alice.
+3. Alice encrypts the nonce using a shared symmetric key and sends it back to Bob
+4. Bob decrypts the nonce and compares it to R. If they're identical, Alice is authenticated
+==========================================================================================
+
 
 8.5.1*
 
 - Be able to explain how symmetric key cryptography, public key cryptography, hash functions and digital signatures can be combined to provide secrecy, sender authentication and message integrity in a message passing application like email.
 
+==========================================================================================
+
+==========================================================================================
+
+
 8.6*
 
 - Be able to explain the purpose of the secure sockets layer and  where/how it fits in the protocol stack.
+
+==========================================================================================
+
+==========================================================================================
+
 
 8.6.1*
 
@@ -84,38 +130,40 @@ Attacks:
 - Be able to describe the key derivation process for "almost-SSL".
 - Be able to explain the data transfer phase of "almost-SSL".
 
+==========================================================================================
+
+==========================================================================================
+
+
 8.6.2*
 
 - Explain why the "real" SSL handshake involves the client and the server exchanging a MAC of all previous handshake messages.
 - Explain why the real SSL protocol makes use of an explicit connection closure message type.
 
-8.7
+==========================================================================================
 
-- Be able to explain the type of security IPSec provides.
-- Be able to explain why (i) security at the networking level (IPSec) is useful, (ii) security at the networking level is not by itself sufficient for network security needs.
+==========================================================================================
+
 
 8.7.1*
 
 - Be able to explain the concept of a virtual private network.
 - Be able to explain how IPSec can be used to create a VPN across the public Internet.
 
-8.8
+==========================================================================================
 
-8.8.1
+==========================================================================================
 
-- Be able to explain the steps involved with WEP authentication.
-- Be able to provide an intuitive explanation of why WEP ended
-up vulnerable to attack.
-
-8.8.2
-
-- Be able to explain the four phases of the 802.11i (WPA2) 
-protocol.
 
 8.9*
 
 - Be able to explain the purpose of firewall.
 - Be able to explain the weakness of the argument about the utility of firewalls presented in this section in the textbook.
+
+==========================================================================================
+
+==========================================================================================
+
 
 8.9.1*
 
@@ -123,12 +171,19 @@ protocol.
 - Be able to explain the functioning of a traditional firewall.
 - Be able to explain the functioning of a stateful firewall, how it differs from a "traditional" firewall and why that might be useful.
 
+==========================================================================================
+
+==========================================================================================
+
+
 8.9.2*
 
 - Be able to explain what deep packet inspection is.
 - Be able to explain the purpose of an intrusion detection system and an intrusion prevention system.
 - Be able to explain what a DMZ is and why it is used.
 
+==========================================================================================
 
+==========================================================================================
 
 

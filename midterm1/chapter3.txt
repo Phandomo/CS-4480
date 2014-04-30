@@ -1,175 +1,181 @@
-3.1
-
-3.1.1
-
-- Be able to explain the relationship between the transport and network
-layer in computer networks.
-
-3.1.2
-
-- Be able to explain the terminology associated with the Internet
-transport layer.
-- Be able to explain the IP service model.
-- Be able to explain the service models provided by TCP and UDP.
 
 3.2*
 
-- Be able to explain the multiplexing and demultiplexing functions
-of a generic transport layer.
-- Be able to explain multiplexing and demultiplexing in the
-context of a connectionless transport like UDP.
-- Be able to explain multiplexing and demultiplexing in the
-context of connection-oriented transport like TCP.
+- Be able to explain the multiplexing and demultiplexing functions of a generic transport layer.
+- Be able to explain multiplexing and demultiplexing in the context of a connectionless transport like UDP.
+- Be able to explain multiplexing and demultiplexing in the context of connection-oriented transport like TCP.
+
+==========================================================================================
+- multiplexing at the transport layer is the process of gathering application data, wrapping it in a segment and sending it down; demultiplexing is the opposite, and the transport layer talks to a socket (via port number) to deliver to the right place
+
+- UDP = two-tuple of destination IP and port
+
+- TCP = four-tuple of source IP and port, destination IP and port
+==========================================================================================
+
 
 3.3*
 
 - Be able to explain the transport services provided by UDP.
-- Be able to provide reasons why UDP's minimalist transport
-service is useful and needed.
+- Be able to provide reasons why UDP's minimalist transport service is useful and needed.
 
-3.3.1
+==========================================================================================
+- UDP provides connectionless multiplexing/demultiplexing and some error correction 
 
-- Given the UDP segment structure, be able to explain the purpose
-and function of each field.
+- no connection management/state makes it speedy and give it smaller packet overhead 
+==========================================================================================
 
-3.3.2
-
-- Be able to explain through example how the UDP checksum
-is calculated and used in the UDP segment.
-
-3.4*
-
-- Be able to explain how a transport protocol can provide the
-abstraction of a reliable channel over an unreliable network
-layer.
-- Be able to use the functions associated with the 
-unidirectional reliable transfer protocol depicted in Figure 3.8
-to design simple reliable transport protocols.
 
 3.4.1*
 
-- Be able to design and/or explain the functionality of a reliable
-transport protocol through the use of finite state machine
-diagrams.
-- Be able to explain and use in transport protocol design the different
-mechanisms available to deal with imperfections in the network layer.
-- Be able to explain, e.g., using a finite state machine, the functionality
-of a alternating-bit-protocol.
+- Be able to design and/or explain the functionality of a reliable transport protocol through the use of finite state machine diagrams.
+- Be able to explain and use in transport protocol design the different mechanisms available to deal with imperfections in the network layer.
+- Be able to explain, e.g., using a finite state machine, the functionality of a alternating-bit-protocol.
+
+==========================================================================================
+- you got this
+
+- sequence numbers, ACKs, and timers
+
+- you got this
+==========================================================================================
+
 
 3.4.2*
 
-- Be able to explain the why stop-and-wait protocols (like the
-alternating bit protocol) is inefficient.
-- Be able to explain how this inefficiency might be addressed
-through a pipelined protocol.
-- Be able to explain the consequences for a transport protocol
-when pipelined functionality is implemented.
+- Be able to explain the why stop-and-wait protocols (like the alternating bit protocol) is inefficient.
+- Be able to explain how this inefficiency might be addressed through a pipelined protocol.
+- Be able to explain the consequences for a transport protocol when pipelined functionality is implemented.
+
+==========================================================================================
+- The sender must wait for ACKs instead of just sending lots of packets (round-trip delay)
+
+- Send multiple packets without waiting for acknowledgement
+
+- Consequences:
+	- range of sequence numbers must be increased
+	- sender and receiver might have to buffer
+==========================================================================================
+
 
 3.4.3*
 
-- Be able to explain the functionality of a go-back-N (GBN)
-transport protocol, e.g., by using an extended FSM.
-- Be able to explain the sliding window mechanism used by
-the GBN protocol, e.g., by using a sender's view of the sequence
-number space.
- 
+- Be able to explain the functionality of a go-back-N (GBN) transport protocol, e.g., by using an extended FSM.
+- Be able to explain the sliding window mechanism used by the GBN protocol, e.g., by using a sender's view of the sequence number space.
+
+==========================================================================================
+- GBN has the following:
+	- already ACK'd
+	- base (oldest unacknowledge packet)
+	- nextseqnum (next available sequence number)
+	- N is window size
+==========================================================================================
+
+
 3.4.4*
 
-- Be able to explain how the selective repeat (SR) protocol is an
-improvement over the GBN protocol.
-- Be able to explain the sliding window mechanism used by the
-SR protocol, e.g., by showing sender and receiver views of
-the sequence number space.
-- Be able to explain the functionality of the SR protocol, e.g.,
-through the use of a ladder diagram and/or by explaining the events
-and resulting actions at both sender and receiver.
-- Be able to explain why, if the window size of a protocol
-like SR is of the same magnitude as the sequence number space,
-it can lead to protocol ambiguity.
+- Be able to explain how the selective repeat (SR) protocol is an improvement over the GBN protocol.
+- Be able to explain the sliding window mechanism used by the SR protocol, e.g., by showing sender and receiver views of the sequence number space.
+- Be able to explain the functionality of the SR protocol, e.g., through the use of a ladder diagram and/or by explaining the events and resulting actions at both sender and receiver.
+- Be able to explain why, if the window size of a protocol like SR is of the same magnitude as the sequence number space, it can lead to protocol ambiguity.
 
-3.5
+==========================================================================================
+- sender only retransmits packets received in error (not the whole window)
+
+- you got this
+
+- you got this
+
+- since the sequence numbers wrap, the sender might not know (for a given sequence number) if it should retransmit or send a new packet
+==========================================================================================
+
 
 3.5.1*
 
-- Be able to explain why a connection establishment phase 
-is useful and needed in TCP.
-- Be able to explain the terminology and mechanisms involved
-with a TCP connection.
+- Be able to explain why a connection establishment phase is useful and needed in TCP.
+- Be able to explain the terminology and mechanisms involved with a TCP connection.
+
+==========================================================================================
+- Because the state of the connection is completely contained in the hosts
+
+- three-way handshake (you got this)
+
+- MSS (maximum segment size) = the largest size a segment can be after being stuffed in a datagram (and the IP header), then being stuffed in a frame
+
+- MTU (maximum transmission unit) = the largest size allowed for a frame
+==========================================================================================
+
 
 3.5.2*
 
-- Given the structure of a TCP segment, be able to explain the purpose
-and function of each field.
-- Be able to explain the functioning of sequence numbers and
-acknowledgment numbers in TCP.
+- Given the structure of a TCP segment, be able to explain the purpose and function of each field.
+- Be able to explain the functioning of sequence numbers and acknowledgment numbers in TCP.
+
+==========================================================================================
+- you got this
+
+- sequence number is the first byte of the stream of bytes
+
+- acknowledgement number is the sequence number of the next expected byte
+==========================================================================================
+
 
 3.5.3* 
 
-- Be able to explain how and why round-trip estimation is done
-in TCP. (Know the components of timeout interval
-and how each component is estimated.)
+- Be able to explain how and why round-trip estimation is done in TCP. (Know the components of timeout interval and how each component is estimated.)
+
+==========================================================================================
+- Members of the equation for estimating TimeoutInterval:
+	- EstimatedRTT
+	- DevRTT
+	- SampleRTT
+==========================================================================================
+
 
 3.5.4**
 
-- Be able to describe the characteristics of the reliable
-data transfer that TCP provides.
-- Be able to explain TCP's sender procedures in terms
-of timeouts, sequence numbers, and acknowledgements.
-- Be able to explain TCP's fast retransmit mechanism
-and under what conditions it would be beneficial.
+- Be able to describe the characteristics of the reliable data transfer that TCP provides.
+- Be able to explain TCP's sender procedures in terms of timeouts, sequence numbers, and acknowledgements.
+- Be able to explain TCP's fast retransmit mechanism and under what conditions it would be beneficial.
+
+==========================================================================================
+- you got all this
+==========================================================================================
+
 
 3.5.5**
 
-- Be able to explain flow-control and congestion control
-and why both are needed.
-- Be able to explain how flow control is realized via
-the received window mechanism.
+- Be able to explain flow-control and congestion control and why both are needed.
+- Be able to explain how flow control is realized via the received window mechanism.
+
+==========================================================================================
+- you got all this
+==========================================================================================
+
 
 3.5.6**
 
-- Be able to explain the TCP connection procedure, including
-connection establishment and teardown, and how sequence numbers
-and acknowledgement numbers and flags are set.
-- Be able to explain the client and server side states
-associated with a TCP connection.
-- Be able to explain how a SYN flooding attack is launched
-and how SYN cookies can be used to solve the problem.
+- Be able to explain the TCP connection procedure, including connection establishment and teardown, and how sequence numbers and acknowledgement numbers and flags are set.
+- Be able to explain the client and server side states associated with a TCP connection.
+- Be able to explain how a SYN flooding attack is launched and how SYN cookies can be used to solve the problem.
 
-3.6
+==========================================================================================
+- you got all this
+==========================================================================================
 
-3.6.1
-
-- Be able to explain the relationship between throughput and
-delay as a function of host sending rate for scenarios one
-and two.
-
-3.6.2
-
-- Be able to explain the two basic approaches to dealing with
-congestion control.
 
 3.7**
 
-- Be able to explain how TCP's congestion control and flow
-control are two separate mechanisms, but are "coupled"
-through the amount of unacknowledged data that a sender may have.
-- Be able to explain the relationship between the approximate
-sender rate, the congestion window and the round trip time
-when the amount of outstanding data is constrained by
-the congestion window.
-- Be able to explain the guiding principles that govern
-TCPs approach to congestion control.
-- Be able to explain the three phases of the TCP
-congestion-control algorithm. (E.g., using words and/or
-using a FSM.)
+- Be able to explain how TCP's congestion control and flow control are two separate mechanisms, but are "coupled" through the amount of unacknowledged data that a sender may have.
+- Be able to explain the relationship between the approximate sender rate, the congestion window and the round trip time when the amount of outstanding data is constrained by the congestion window.
+- Be able to explain the guiding principles that govern TCP's approach to congestion control.
+- Be able to explain the three phases of the TCP congestion-control algorithm. (E.g., using words and/or using a FSM.)
 
-3.7.1
-
-- Be able to explain why, intuitively, TCP's AIMD congestion control mechanism
-can be expected to lead to fairness when two long-lived
-TCP connections share a bottleneck link.
-- Be able to explain why significant amounts of UDP traffic
-might be cause of concern with respect to the stability of the
-Internet as a whole.
+==========================================================================================
+- slow start to ssthresh (exponential)
+- congestion avoidance (linear)
+- triple duplicate ACK = cut window in half
+- timeout = cut window to 1
+==========================================================================================
 
 

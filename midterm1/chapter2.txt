@@ -1,226 +1,208 @@
-2.1
 
 2.1.1*
 
-- Be able to explain and compare the two predominant application architectures
-in use in the Internet, including giving examples and discussing the pros and
-cons of each approach.
+- Be able to explain and compare the two predominant application architectures in use in the Internet, including giving examples and discussing the pros and cons of each approach.
 
-+ client/server - 
-+ p2p - bittorrent, fast download, scales well, security challenge
+==========================================================================================
+- client/server - 
+- p2p - bittorrent, fast download, scales well, security challenge
+==========================================================================================
 
 
 2.1.2*
 
 - Be able to explain how networked applications are realized and communicate.
+- Be able to explain the API provided for communication between application processes and the network.
 
-+ process -> socket -> port -> IP address
+==========================================================================================
+- process -> socket -> port -> IP address
 
+- the API is the socket
+==========================================================================================
 
-- Be able to explain the API provided for communication between application
-processes and the network.
-
-+ the API is the socket
-
-
-2.1.3
-
-- Be able to list and describe the different dimensions along which
-transport services can be provided to applications.
-- Be able to give examples of applications that would require and/or
-benefit from transport services being provided along these different
-dimensions.
-
-2.1.4
-
-- Be able to describe the transport services that are and are not provided
-by the Internet.
-- Provide examples of applications that use the different Internet transport
-services.
 
 2.1.5*
 
-- Be able to explain the purpose of application layer protocols and the
-relationship between applications and application layer protocols.
+- Be able to explain the purpose of application layer protocols and the relationship between applications and application layer protocols.
 
-+ application layer protocols define the types and syntax of messages sent/received
+==========================================================================================
+- application layer protocols define the types and syntax of messages sent/received
+==========================================================================================
 
-
-2.2
-
-2.2.1
-
-- Be able to explain the working of the HTTP protocol including the application
-architecture being used, the type of interaction that is used, the transport
-protocol used and the characteristic that allows the protocol to scale.
 
 2.2.2*
 
-- Be able to explain and reason about the details of downloading and rendering
-in a browser a typical web page with embedded objects assuming both non-persistent
-and persistent connections.
+- Be able to explain and reason about the details of downloading and rendering in a browser a typical web page with embedded objects assuming both non-persistent and persistent connections.
 
-+ non-persistent: make TCP connection, download HTML file, repeat for all images
-+ persistent: make TCP connection, send multiple requests without waiting for response (pipeline)
+==========================================================================================
+- non-persistent: make TCP connection, download HTML file, repeat for all images
+- persistent: make TCP connection, send multiple requests without waiting for response (pipeline)
+==========================================================================================
 
-
-2.2.3
-
-- Be able to identify and describe the purpose of the elements
-of an HTTP request. 
-- Be able to explain the need for and use of different HTTP methods fields.
-- Be able to identify and describe the purpose of the elements
-of an HTTP response.
-- Be able to interpret, analyze and explain a transcript of
-HTTP interaction.
 
 2.2.4**
 
 - Be able to explain the need for HTTP cookies.
 - Be able to explain how HTTP cookies satisfy this need.
 
-+ HTTP is stateless; cookies help make it stateful
-+ Each time you access a domain, your browser sends the cookie
+==========================================================================================
+- HTTP is stateless; cookies help make it stateful
+- Each time you access a domain, your browser sends the cookie
+==========================================================================================
 
 
 2.2.5*
 
 - Be able to explain the functionality of an HTTP proxy server.
-- Be able to explain different scenarios in which HTTP proxies could
-be useful.
+- Be able to explain different scenarios in which HTTP proxies could be useful.
+
+==========================================================================================
+- acts as server and client; caches requests locally to disk
+
+- to reduce response times when bandwidth is a concern; to reduce traffic on an Internet link (and reduce cost)
+==========================================================================================
 
 
 2.2.6*
 
-- Be able to explain the HTTP conditional GET mechanism and explain where
-it could/should be used.
+- Be able to explain the HTTP conditional GET mechanism and explain where it could/should be used.
 
-+ Use the "If-Modified-Since" header in an HTTP GET request
+==========================================================================================
+- Use the "If-Modified-Since" header in an HTTP GET request
+==========================================================================================
 
-
-2.3
-
-- Be able to explain at least three ways in which FTP
-differs from HTTP (from a protocol perspective, not a user
-perspective).
 
 2.4*
 
-- Be able to list and describe the functionality of the three
-main components that enable email.
+- Be able to list and describe the functionality of the three main components that enable email.
 
-+ client, server, SMTP
+==========================================================================================
+- client, server, SMTP
+==========================================================================================
 
 
 2.4.1* 
 
-- Be able to explain the steps involved for Alice to send email to Bob
-whose email account is associated with a different mail server than
-that of Alice.
-- Be able to interpret, analyze and explain a transcript of an SMTP exchange
-between an SMTP client and server.
+- Be able to explain the steps involved for Alice to send email to Bob whose email account is associated with a different mail server than that of Alice.
+- Be able to interpret, analyze and explain a transcript of an SMTP exchange between an SMTP client and server.
 
-2.4.2
+==========================================================================================
+- you got this
+==========================================================================================
 
-- Be able to list and describe three differences between SMTP and HTTP
-(from a protocol perspective).
-
-2.4.3
-
-- Be able to explain the relationship between message header lines and
-SMTP commands.
-
-2.4.4
-
-- Be able to explain the need for mail access protocols and how they
-are different from SMTP.
-- Be able to explain the difference between POP3 and IMAP.
 
 2.5**
 
 - Be able to explain the need for the domain name system.
 
-+ translate hostnames to IP addresses
+==========================================================================================
+- translate hostnames to IP addresses
+==========================================================================================
 
 
 2.5.1**
 
-- Be able to explain how DNS, which is an application level protocol,
-is not really used as an application by itself, but all the same is
-an essential part of nearly every application on the Internet.
-(Part of explanation should involve a step-by-step explanation of
-how another protocol interacts with and uses DNS.)
-
+- Be able to explain how DNS, which is an application level protocol, is not really used as an application by itself, but all the same is an essential part of nearly every application on the Internet. (Part of your explanation should involve a step-by-step explanation of how another protocol interacts with and uses DNS.)
 - Be able to list and describe four different services provided by DNS.
 
-+ name-to-IP resolution
-+ host aliasing
-+ mail server aliasing
-+ load balancing
+==========================================================================================
+- name-to-IP resolution
+- host aliasing
+- mail server aliasing
+- load balancing
+==========================================================================================
 
 
 2.5.2**
 
-- Be able to describe the DNS hierarchy and explain the functionality provided
-by each level in the hierarchy. (Include the local DNS server as part
-of the hierarchy.)
-- Be able to explain the interactions and steps involved in performing a
-DNS lookup.
+- Be able to describe the DNS hierarchy and explain the functionality provided by each level in the hierarchy. (Include the local DNS server as part of the hierarchy.)
+- Be able to explain the interactions and steps involved in performing a DNS lookup.
 
-+ end host -> local DNS -> root -> TLD -> authoritative
+==========================================================================================
+- end host -> local DNS -> root -> TLD -> authoritative
+==========================================================================================
 
 
 2.5.3**
 
-- Be able to interpret, analyze and explain the output from common DNS tools
-such as nslookup and dig.
-- Be able to explain the process whereby DNS entries for a new domain
-name is entered into the DNS system.
+- Be able to interpret, analyze and explain the output from common DNS tools such as nslookup and dig.
+- Be able to explain the process whereby DNS entries for a new domain name is entered into the DNS system.
+- Be able to explain a number of ways in which DNS is vulnerable to attack. (Excluding flooding attacks.)
 
-+ register domain name with registrar
-+ provide IP addresses of primary/secondary DNS servers
-+ mapping propagates...
+==========================================================================================
+- register domain name with registrar
 
+- provide IP addresses of primary/secondary DNS servers
+- mapping propagates...
 
-- Be able to explain a number of ways in which DNS is vulnerable to attack.
-(Excluding flooding attacks.)
+- man-in-the middle
+- DDoS attack against targeted host
+==========================================================================================
 
-+ man-in-the middle
-+ DDoS attack against targeted host
-
-
-2.6
 
 2.6.1*
 
-- Be able to explain the inherent scalability benefit that P2P 
-has (assuming the ideal conditions explained in this section).
-You might be asked to provide an intuitive explanation in essay style.
-Alternatively you might be asked to do this by explaining the
-meaning of each of the terms in equation 2.1 and equation 2.2 as part
-of your explanation.
+- Be able to explain the inherent scalability benefit that P2P has (assuming the ideal conditions explained in this section). You might be asked to provide an intuitive explanation in essay style. Alternatively you might be asked to do this by explaining the
+meaning of each of the terms in equation 2.1 and equation 2.2 as part of your explanation.
 - Be able to explain the functioning of the BitTorrent P2P protocol.
+
+==========================================================================================
+Dcs  = Distribution time, client/server model
+Dp2p = Distribution time, P2P model
+N    = Number of clients downloading the file
+F    = File size in bits
+us   = upload rate of server
+u1   = upload rate of client 1
+dmin = download minimum (i.e. client with slowest download rate)
+
+Dcs   = max{NF/us, F/dmin}
+
+^ distribution time increases linearly with N (number of clients)
+
+
+Dp2p  = max{F/us, F/dmin, NF/(us + u1 + u2 + ... + uN}
+
+^ self scaling
+
+- BitTorrent Protocol:
+	- one collection of participating peers = torrent
+	- each torrent has a tracker
+	- when a peer joins a torrent, it registers with the tracker
+	- peers that establish TCP connections with each other are neighbors
+	- peers download equal-sized chunks
+	- while downloading chunks, peers also upload chunks to neighbors
+	- unchoked neighbors are those supplying you chunks at the highest rates
+	- optimistically unchoked neighbors are chosen at random
+	- choked peers receive no chunks from you
+==========================================================================================
+
 
 2.6.2**
 
-- Be able to explain how a distributed hash table might be implemented
-to realize a key-value pair database in P2P fashion. Including DHT
-construction, storing and retrieving entries.
-- Be able to explain how a circular DHT could be used to allow
-a DHT to scale. (Be able to articulate the scaling problem that
-a circular DHT is meant to solve.)
-- Be able to explain problems with a "purely circular" DHT, how that
-might be solved. Be able to articulate the generic tradeoff 
-in DHT construction.
-- Be able to explain how DHTs manage to maintain both the DHT and
-information that it contains despite peer churn.
+- Be able to explain how a distributed hash table might be implemented to realize a key-value pair database in P2P fashion. Include DHT construction, storing and retrieving entries.
+- Be able to explain how a circular DHT could be used to allow a DHT to scale. (Be able to articulate the scaling problem that a circular DHT is meant to solve.)
+- Be able to explain problems with a "purely circular" DHT, and how they might be solved. Be able to articulate the generic tradeoff in DHT construction.
+- Be able to explain how DHTs manage to maintain both the DHT and information that it contains despite peer churn.
 
-+ 
+==========================================================================================
+- Each host in the DHT is assigned an integer ID. Each key is hashed to an integer, and each key/value pair is stored by the host whose ID matches the key. To perform a lookup, a host simply computes the hash on the content and asks who has it.
+
+- The circular DHT allows each host to only keep track of its predecessor and successor (instead of all hosts). Lookups can simply be forwarded by each peer until the right peer is reached.
+
+- The tradeoff is that a worst-case lookup hits all N hosts. This can be mitigated by allowing each host to also track random "shortcut" hosts.
+
+- To deal with peer churn, each host keeps track of its next two successors, then they update when a peer leaves. (How the *information* is retained is a total mystery.)
+==========================================================================================
 
 
 2.7*
 
-- From a socket programming perspective, be able to explain the
-similarities and differences between implementing a client/server
-application implemented with UDP versus TCP as the underlying transport
-protocol.
+- From a socket programming perspective, be able to explain the similarities and differences between implementing a client/server application implemented with UDP versus TCP as the underlying transport protocol.
+
+==========================================================================================
+- TCP is connection-oriented and provides a reliable byte stream channel
+
+- UDP is connectionless and sends independent packets without guaranteed delivery
+==========================================================================================
+
+
