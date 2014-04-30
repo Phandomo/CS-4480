@@ -41,15 +41,21 @@ public class CipherListen {
 		if (port == -1)
 			error("Missing argument: -p <port>");
 		
+		vout("\n=============================\n"
+			 + "    Starting CipherListen    \n"
+			 + "=============================\n");
+		
 		listen();
 		decryptMessage();
+		
+		vout(""); // If output is verbose, add a new line at the very end
 	}
 	
 	private static void listen() {
 		ServerSocket bobSocket = null;
 		
 		try {
-			vout("Waiting for secure message from Alice...");
+			vout("Waiting for a secure message from Alice...");
 			bobSocket = new ServerSocket(port);
 			Socket aliceSocket = bobSocket.accept();
 			
@@ -57,7 +63,7 @@ public class CipherListen {
 			int payloadLength = dis.readInt();
 			
 			if (payloadLength > 0) {
-				vout("Now receiving secure message from Alice");
+				vout("Now receiving a secure message from Alice");
 				payload = new byte[payloadLength];
 				dis.readFully(payload);
 			} else {
@@ -131,7 +137,7 @@ public class CipherListen {
 		
 		String messageText = new String(message, "UTF-8");
 		
-		print("The plaintext message from Alice is: "+messageText);
+		print("\nThe plaintext message from Alice is:\n\n"+messageText);
 	}
 	
 	private static PrivateKey loadPrivateKey(String filename) throws FileNotFoundException,
@@ -163,9 +169,9 @@ public class CipherListen {
 		print("\nCipherListen v0.1 by Rob Johansen\n\n"
 				+ "Usage: java CipherListen -p <port> [-v]\n\n"
 				+ "Arguments:\n"
-				+ "    -p <port>     The port number on which this computer will listen for a secure message from Alice.\n"
-				+ "    -v            Display verbose output.\n"
-				+ "    -h            Print this message and exit.\n");
+				+ "    -p <port>  The port number on which this computer will listen for a secure message from Alice.\n"
+				+ "    -v         Display verbose output.\n"
+				+ "    -h         Print this message and exit.\n");
 		System.exit(0);
 	}
 	
