@@ -1,4 +1,6 @@
 import java.io.*;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.security.*;
@@ -78,7 +80,8 @@ public class CipherTalk {
 		
 		signMessage();
 		encryptMessage();
-		decryptMessage(); // TODO: Make this part of Bob's program...
+//		decryptMessage();
+		sendMessage();
 		
 		vout(""); // If output is verbose, add a new line at the very end
 	}
@@ -131,7 +134,7 @@ public class CipherTalk {
 		KeyGenerator keyGenerator = KeyGenerator.getInstance("DESede");
 		SecretKey tripleDesKey = keyGenerator.generateKey();
 		
-		vout("Encrypting hash, signature, and message to 3DES key");
+		vout("Encrypting the hash, signature, and message to the 3DES key");
 		
 		Cipher cipher = Cipher.getInstance("DESede/ECB/PKCS5Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, tripleDesKey);
@@ -154,6 +157,8 @@ public class CipherTalk {
 		 * 3. Read the remaining bytes to obtain the ciphertext.
 		 */
 		
+		vout("Combining all the ciphertext bytes");
+		
 		ByteBuffer buffer = ByteBuffer.allocate(4);
 		buffer.putInt(symmetricKey.length);
 		byte[] symmetricKeySize = buffer.array();
@@ -167,6 +172,20 @@ public class CipherTalk {
 		System.arraycopy(symmetricKeySize, 0, payload, 0,       kLength);
 		System.arraycopy(symmetricKey,     0, payload, kLength, tLength);
 		System.arraycopy(cipherText,       0, payload, kLength + tLength, cLength);
+	}
+	
+	private static void sendMessage() throws UnknownHostException,
+											 IOException {
+		vout("Sending the ciphertext to Bob...");
+		Socket bobSocket = new Socket(address, port);
+		DataOutputStream dos = new DataOutputStream(bobSocket.getOutputStream());
+		
+		dos.writeInt(payload.length);
+		dos.write(payload);
+		dos.flush();
+		
+		bobSocket.close();
+		dos.close();
 	}
 	
 	private static void decryptMessage() throws FileNotFoundException,
