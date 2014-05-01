@@ -21,8 +21,11 @@ public class CipherTalk {
 	/* Keys */
 	private static final String ALICE_PRIVATE_KEY_FILENAME = "aliceprivate.der";
 	private static final String BOB_PUBLIC_KEY_FILENAME = "bobpublic.der";
+	private static final String CA_PUBLIC_KEY_FILENAME = "CApublic.der";
+	private static final String BOB_CA_SIGNATURE = "bob_ca_signature";
 	private static PrivateKey alicePrivateKey;
 	private static PublicKey bobPublicKey;
+	private static PublicKey caPublicKey;
 	
 	/* Message Hash */
 	private static byte[] messageHash;
@@ -118,7 +121,34 @@ public class CipherTalk {
 												BadPaddingException,
 												FileNotFoundException,
 												InvalidKeySpecException,
-												IOException {
+												IOException,
+												SignatureException {
+		vout("Loading the CA's public key");
+		caPublicKey = loadPublicKey(CA_PUBLIC_KEY_FILENAME);
+		
+		vout("Loading the CA's signature of Bob's public key");
+		FileInputStream fis = new FileInputStream(BOB_CA_SIGNATURE);
+		byte[] CAsignature = new byte[fis.available()]; 
+		fis.read(CAsignature);
+		fis.close();
+		
+		vout("Loading Bob's public key");
+		bobPublicKey = loadPublicKey(BOB_PUBLIC_KEY_FILENAME);
+		
+		vout("Verifying the CA signature on Bob's public key");
+		Signature rsa = Signature.getInstance("SHA1withRSA");
+		rsa.initVerify(caPublicKey);
+		rsa.update(bobPublicKey.getEncoded());
+		boolean verified = rsa.verify(CAsignature);
+		
+		if (verified) {
+			vout("Bob's public key is verified by the CA");
+		} else {
+			vout("Bob's public key is not verified by the CA!");
+			vout("Exiting due to suspicion of an impostor public key!");
+			System.exit(1);
+		}
+		
 		int hLength = messageHash.length;
 		int sLength = signature.length;
 		int mLength = message.length;
@@ -142,7 +172,6 @@ public class CipherTalk {
 		
 		vout("Encrypting the 3DES key to Bob's public key");
 		
-		bobPublicKey = loadPublicKey(BOB_PUBLIC_KEY_FILENAME);
 		cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, bobPublicKey);
 		byte[] symmetricKey = cipher.doFinal(tripleDesKey.getEncoded());
