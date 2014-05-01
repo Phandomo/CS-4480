@@ -126,8 +126,10 @@ public class CipherListen {
 		
 		byte[] plainText = cipher.doFinal(encryptedMessageParts);
 		
-		// TODO: Get and verify the signature (128 bytes)
+		// TODO: Get and verify the signature (128 bytes, starting at offset 20)
 		
+		
+		// Decrypt the message so the hash can be verified
 		byte[] message = new byte[plainText.length - 20 - 128];
 		
 		for (int i = 20 + 128, j = 0; i < plainText.length; i++, j++) {
@@ -135,8 +137,6 @@ public class CipherListen {
 		}
 		
 		String messageText = new String(message, "UTF-8");
-		
-		print("\nThe plaintext message from Alice is:\n\n"+messageText);
 		
 		// Verify the hash (20 bytes)
 		vout("\nNow checking the integrity of the message.");
@@ -152,10 +152,13 @@ public class CipherListen {
 			receivedMessageHash[i] = plainText[i];
 		}
 		
-		if (Arrays.equals(computedMessageHash, receivedMessageHash))
+		if (Arrays.equals(computedMessageHash, receivedMessageHash)) {
 			vout("The hash is verified. This message was not altered in transit.");
-		else
-			vout("The hash failed verification. This message was altered in transit!");
+			print("\nThe plaintext message from Alice is:\n\n"+messageText);
+		} else {
+			vout("The hash failed verification. The message was altered in transit!");
+			print("\nThe altered message is:\n\n"+messageText);
+		}
 			
 	}
 	
