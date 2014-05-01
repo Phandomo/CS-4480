@@ -2,12 +2,9 @@ import java.io.*;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
 import java.security.*;
 import java.security.spec.*;
-
 import javax.crypto.*;
-import javax.crypto.spec.SecretKeySpec;
 
 public class CipherTalk {
 	
@@ -37,12 +34,7 @@ public class CipherTalk {
 	private static byte[] cipherText;
 	private static byte[] payload;
 	
-	/* ===================== */
-	/*     Bob Variables     */
-	/* ===================== */
-	private static final String BOB_PRIVATE_KEY_FILENAME = "bobprivate.der";
-	private static PrivateKey bobPrivateKey;
-	
+	/* Entry Point */
 	public static void main(String[] args) throws FileNotFoundException,
 												  IOException,
 												  NoSuchAlgorithmException,
@@ -74,16 +66,16 @@ public class CipherTalk {
 		if (messageString == null || messageString.length() == 0)
 			error("Missing argument: -m <message>");
 		
-//		message = messageString.getBytes();
 		message = messageString.getBytes("UTF-8");
 		
 		vout("\n========================================\n"
 		     + "    Starting CipherTalk Transmission\n"
 		     + "========================================\n");
 		
+		vout("The message from Alice to Bob is: \n\n"+messageString+"\n");
+		
 		signMessage();
 		encryptMessage();
-//		decryptMessage();
 		sendMessage();
 		
 		vout(""); // If output is verbose, add a new line at the very end
@@ -95,23 +87,29 @@ public class CipherTalk {
 											 InvalidKeySpecException,
 											 InvalidKeyException,
 											 SignatureException {
-		vout("Creating a hash of the message");
+		vout("Creating a SHA-1 message digest");
 		
 		MessageDigest md = MessageDigest.getInstance("SHA-1");
 		md.update(message);
 		messageHash = md.digest();
 		
+		printHex("The message digest", messageHash);
+		
 		alicePrivateKey = loadPrivateKey(ALICE_PRIVATE_KEY_FILENAME);
+		
+		printHex("Alice's private key", alicePrivateKey.getEncoded());
 		
 		if (alicePrivateKey == null)
 			error("Problem with Alice's private key...");
 		
-		vout("Signing the hash using Alice's private key");
+		vout("Signing the message digest using Alice's private key");
 		
 		Signature rsa = Signature.getInstance("SHA1withRSA");
 		rsa.initSign(alicePrivateKey);
 		rsa.update(messageHash);
 		signature = rsa.sign();
+		
+		printHex("Alice's signature of the message digest", signature);
 	}
 	
 	private static void encryptMessage() throws NoSuchAlgorithmException,
@@ -126,14 +124,20 @@ public class CipherTalk {
 		vout("Loading the CA's public key");
 		caPublicKey = loadPublicKey(CA_PUBLIC_KEY_FILENAME);
 		
+		printHex("The CA's public key", caPublicKey.getEncoded());
+		
 		vout("Loading the CA's signature of Bob's public key");
 		FileInputStream fis = new FileInputStream(BOB_CA_SIGNATURE);
 		byte[] CAsignature = new byte[fis.available()]; 
 		fis.read(CAsignature);
 		fis.close();
 		
+		printHex("The CA's signature of Bob's public key", CAsignature);
+		
 		vout("Loading Bob's public key");
 		bobPublicKey = loadPublicKey(BOB_PUBLIC_KEY_FILENAME);
+		
+		printHex("Bob's public key", bobPublicKey.getEncoded());
 		
 		vout("Verifying the CA signature on Bob's public key");
 		Signature rsa = Signature.getInstance("SHA1withRSA");
@@ -164,17 +168,23 @@ public class CipherTalk {
 		KeyGenerator keyGenerator = KeyGenerator.getInstance("DESede");
 		SecretKey tripleDesKey = keyGenerator.generateKey();
 		
+		printHex("The unencrypted 3DES key", tripleDesKey.getEncoded());
+		
 		vout("Encrypting the hash, signature, and message to the 3DES key");
 		
 		Cipher cipher = Cipher.getInstance("DESede/ECB/PKCS5Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, tripleDesKey);
 		cipherText = cipher.doFinal(messageParts);
 		
+		printHex("The ciphertext", cipherText);
+		
 		vout("Encrypting the 3DES key to Bob's public key");
 		
 		cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, bobPublicKey);
 		byte[] symmetricKey = cipher.doFinal(tripleDesKey.getEncoded());
+		
+		printHex("The encrypted 3DES key", symmetricKey);
 		
 		/*
 		 * The first four bytes of the payload will be the size of the symmetric key.
@@ -217,62 +227,6 @@ public class CipherTalk {
 		dos.close();
 	}
 	
-	private static void decryptMessage() throws FileNotFoundException,
-												NoSuchAlgorithmException,
-												InvalidKeySpecException,
-												IOException,
-												NoSuchPaddingException,
-												InvalidKeyException,
-												IllegalBlockSizeException,
-												BadPaddingException {
-		byte[] symmetricKeySizeBytes = new byte[4];
-		
-		for (int i = 0; i < 4; i++) {
-			symmetricKeySizeBytes[i] = payload[i];
-		}
-		
-		int symmetricKeySize = ByteBuffer.wrap(symmetricKeySizeBytes).getInt();
-		
-		byte[] encryptedSymmetricKey = new byte[symmetricKeySize];
-		
-		for (int i = 4, j = 0; i < 4 + symmetricKeySize; i++, j++) {
-			encryptedSymmetricKey[j] = payload[i];
-		}
-		
-		vout("Decrypting the 3DES key with Bob's private key");
-		
-		bobPrivateKey = loadPrivateKey(BOB_PRIVATE_KEY_FILENAME);
-		Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-		cipher.init(Cipher.DECRYPT_MODE, bobPrivateKey);
-		byte[] symmetricKey = cipher.doFinal(encryptedSymmetricKey);
-		
-		vout("Decrypting the ciphertext using the 3DES key");
-		
-		SecretKey tripleDesKey = new SecretKeySpec(symmetricKey, "DESede");
-		cipher = Cipher.getInstance("DESede/ECB/PKCS5Padding");
-		cipher.init(Cipher.DECRYPT_MODE, tripleDesKey);
-		
-		byte[] encryptedMessageParts = new byte[payload.length - symmetricKeySize - 4];
-		
-		for (int i = 4 + symmetricKeySize, j = 0; i < payload.length; i++, j++) {
-			encryptedMessageParts[j] = payload[i];
-		}
-		
-		byte[] plainText = cipher.doFinal(encryptedMessageParts);
-		
-		// TODO: Get the hash (20 bytes)
-		
-		// TODO: Get the signature (128 bytes)
-		
-		for (int i = 20 + 128, j = 0; i < plainText.length; i++, j++) {
-			message[j] = plainText[i];
-		}
-		
-		String messageText = new String(message, "UTF-8");
-		
-		print ("The message is: "+messageText);
-	}
-	
 	private static PublicKey loadPublicKey(String filename) throws FileNotFoundException,
 																   IOException,
 																   NoSuchAlgorithmException,
@@ -311,6 +265,16 @@ public class CipherTalk {
 			KeyFactory kf = KeyFactory.getInstance("RSA");
 			return kf.generatePrivate(spec);
 		}
+	}
+	
+	private static void printHex(String item, byte[] bytes) {
+		StringBuffer hexString = new StringBuffer();
+		
+		for (int i = 0; i < bytes.length; i++) {
+			hexString.append(Integer.toHexString(0xFF & bytes[i]));
+		}
+		
+		vout("\n"+item+" in hex is:\n"+hexString+"\n");
 	}
 	
 	private static void vout(String text) {
