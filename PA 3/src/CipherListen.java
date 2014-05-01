@@ -20,6 +20,8 @@ public class CipherListen {
 	/* Keys */
 	private static final String BOB_PRIVATE_KEY_FILENAME = "bobprivate.der";
 	private static PrivateKey bobPrivateKey;
+	private static final String ALICE_PUBLIC_KEY_FILENAME = "alicepublic.der";
+	private static PublicKey alicePublicKey;
 	
 	/* Application Entry Point */
 	public static void main(String[] args) throws InvalidKeyException,
@@ -29,7 +31,8 @@ public class CipherListen {
 												  NoSuchPaddingException,
 												  IllegalBlockSizeException,
 												  BadPaddingException,
-												  IOException {
+												  IOException,
+												  SignatureException {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-p") && args.length >= i)
 				try { port = Integer.parseInt(args[i+1]); } catch (NumberFormatException e) { error("Invalid port"); }
@@ -90,7 +93,8 @@ public class CipherListen {
 												NoSuchPaddingException,
 												InvalidKeyException,
 												IllegalBlockSizeException,
-												BadPaddingException {
+												BadPaddingException,
+												SignatureException {
 		byte[] symmetricKeySizeBytes = new byte[4];
 		
 		for (int i = 0; i < 4; i++) {
@@ -126,9 +130,6 @@ public class CipherListen {
 		
 		byte[] plainText = cipher.doFinal(encryptedMessageParts);
 		
-		// TODO: Get and verify the signature (128 bytes, starting at offset 20)
-		
-		
 		// Decrypt the message so the hash can be verified
 		byte[] message = new byte[plainText.length - 20 - 128];
 		
@@ -138,9 +139,7 @@ public class CipherListen {
 		
 		String messageText = new String(message, "UTF-8");
 		
-		// Verify the hash (20 bytes)
-		vout("\nNow checking the integrity of the message.");
-		
+		// Get the hash (20 bytes)
 		byte[] messageBytes = messageText.getBytes("UTF-8");
 		MessageDigest md = MessageDigest.getInstance("SHA-1");
 		md.update(messageBytes);
@@ -152,11 +151,33 @@ public class CipherListen {
 			receivedMessageHash[i] = plainText[i];
 		}
 		
+		// Get and verify the signature (128 bytes, starting at offset 20)
+		vout("Checking the signature of the message.");
+		
+		alicePublicKey = loadPublicKey(ALICE_PUBLIC_KEY_FILENAME);
+		byte[] signatureBytes = new byte[128];
+		
+		for (int i = 20, j = 0; i < 148; i++, j++) {
+			signatureBytes[j] = plainText[i];
+		}
+		
+		Signature rsa = Signature.getInstance("SHA1withRSA");
+		rsa.initVerify(alicePublicKey);
+		rsa.update(receivedMessageHash);
+		boolean validSignature = rsa.verify(signatureBytes);
+		
+		if (validSignature)
+			vout("The signature is verified. This message originated from Alice.");
+		else
+			vout("Signature verification failed. This message did not come from Alice!");
+		
+		vout("Checking the integrity of the message.");
+		
 		if (Arrays.equals(computedMessageHash, receivedMessageHash)) {
-			vout("The hash is verified. This message was not altered in transit.");
+			vout("The hash is correct. This message was not altered in transit.");
 			print("\nThe plaintext message from Alice is:\n\n"+messageText);
 		} else {
-			vout("The hash failed verification. The message was altered in transit!");
+			vout("The hash is incorrect. The message was altered in transit!");
 			print("\nThe altered message is:\n\n"+messageText);
 		}
 			
@@ -179,6 +200,26 @@ public class CipherListen {
 			PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
 			KeyFactory kf = KeyFactory.getInstance("RSA");
 			return kf.generatePrivate(spec);
+		}
+	}
+	
+	private static PublicKey loadPublicKey(String filename) throws FileNotFoundException,
+																   IOException,
+																   NoSuchAlgorithmException,
+																   InvalidKeySpecException {
+		File f = new File(filename);
+		
+		if (!f.exists())
+		error("Public key is missing: "+filename);
+		
+		try(FileInputStream fis = new FileInputStream(f);
+			DataInputStream dis = new DataInputStream(fis)) {
+			byte[] keyBytes = new byte[(int)f.length()];
+			dis.readFully(keyBytes);
+			
+			X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+			KeyFactory kf = KeyFactory.getInstance("RSA");
+			return kf.generatePublic(spec);
 		}
 	}
 	
