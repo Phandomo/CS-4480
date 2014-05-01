@@ -139,6 +139,8 @@ public class CipherListen {
 		print("\nThe plaintext message from Alice is:\n\n"+messageText);
 		
 		// Verify the hash (20 bytes)
+		vout("\nNow checking the integrity of the message.");
+		
 		byte[] messageBytes = messageText.getBytes("UTF-8");
 		MessageDigest md = MessageDigest.getInstance("SHA-1");
 		md.update(messageBytes);
@@ -151,7 +153,10 @@ public class CipherListen {
 		}
 		
 		if (Arrays.equals(computedMessageHash, receivedMessageHash))
-			vout("\nThe hash is verified. This message was not altered in transit.");
+			vout("The hash is verified. This message was not altered in transit.");
+		else
+			vout("The hash failed verification. This message was altered in transit!");
+			
 	}
 	
 	private static PrivateKey loadPrivateKey(String filename) throws FileNotFoundException,
