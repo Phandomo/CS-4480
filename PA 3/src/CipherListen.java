@@ -109,12 +109,19 @@ public class CipherListen {
 			encryptedSymmetricKey[j] = payload[i];
 		}
 		
+		printHex("The encrypted 3DES key", encryptedSymmetricKey);
+		
 		vout("Decrypting the 3DES key with Bob's private key");
 		
 		bobPrivateKey = loadPrivateKey(BOB_PRIVATE_KEY_FILENAME);
+		
+		printHex("Bob's private key", bobPrivateKey.getEncoded());
+		
 		Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		cipher.init(Cipher.DECRYPT_MODE, bobPrivateKey);
 		byte[] symmetricKey = cipher.doFinal(encryptedSymmetricKey);
+		
+		printHex("The decrypted 3DES key", symmetricKey);
 		
 		vout("Decrypting the ciphertext using the 3DES key");
 		
@@ -127,6 +134,8 @@ public class CipherListen {
 		for (int i = 4 + symmetricKeySize, j = 0; i < payload.length; i++, j++) {
 			encryptedMessageParts[j] = payload[i];
 		}
+		
+		printHex("The ciphertext", encryptedMessageParts);
 		
 		byte[] plainText = cipher.doFinal(encryptedMessageParts);
 		
@@ -155,11 +164,16 @@ public class CipherListen {
 		vout("Checking the signature of the message.");
 		
 		alicePublicKey = loadPublicKey(ALICE_PUBLIC_KEY_FILENAME);
+		
+		printHex("Alice's public key", alicePublicKey.getEncoded());
+		
 		byte[] signatureBytes = new byte[128];
 		
 		for (int i = 20, j = 0; i < 148; i++, j++) {
 			signatureBytes[j] = plainText[i];
 		}
+		
+		printHex("Alice's signature of the message digest", signatureBytes);
 		
 		Signature rsa = Signature.getInstance("SHA1withRSA");
 		rsa.initVerify(alicePublicKey);
@@ -171,13 +185,15 @@ public class CipherListen {
 		else
 			vout("Signature verification failed. This message did not come from Alice!");
 		
+		printHex("The message digest", computedMessageHash);
+		
 		vout("Checking the integrity of the message.");
 		
 		if (Arrays.equals(computedMessageHash, receivedMessageHash)) {
-			vout("The hash is correct. This message was not altered in transit.");
+			vout("The message digest is correct. This message was not altered in transit.");
 			print("\nThe plaintext message from Alice is:\n\n"+messageText);
 		} else {
-			vout("The hash is incorrect. The message was altered in transit!");
+			vout("The message digest is incorrect. The message was altered in transit!");
 			print("\nThe altered message is:\n\n"+messageText);
 		}
 			
@@ -221,6 +237,16 @@ public class CipherListen {
 			KeyFactory kf = KeyFactory.getInstance("RSA");
 			return kf.generatePublic(spec);
 		}
+	}
+	
+	private static void printHex(String item, byte[] bytes) {
+		StringBuffer hexString = new StringBuffer();
+		
+		for (int i = 0; i < bytes.length; i++) {
+			hexString.append(Integer.toHexString(0xFF & bytes[i]));
+		}
+		
+		vout("\n"+item+" in hex is:\n"+hexString+"\n");
 	}
 	
 	private static void vout(String text) {
