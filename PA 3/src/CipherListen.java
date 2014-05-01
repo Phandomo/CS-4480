@@ -3,6 +3,7 @@ import java.net.*;
 import java.nio.ByteBuffer;
 import java.security.*;
 import java.security.spec.*;
+import java.util.Arrays;
 
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
@@ -125,9 +126,7 @@ public class CipherListen {
 		
 		byte[] plainText = cipher.doFinal(encryptedMessageParts);
 		
-		// TODO: Get the hash (20 bytes)
-		
-		// TODO: Get the signature (128 bytes)
+		// TODO: Get and verify the signature (128 bytes)
 		
 		byte[] message = new byte[plainText.length - 20 - 128];
 		
@@ -138,6 +137,21 @@ public class CipherListen {
 		String messageText = new String(message, "UTF-8");
 		
 		print("\nThe plaintext message from Alice is:\n\n"+messageText);
+		
+		// Verify the hash (20 bytes)
+		byte[] messageBytes = messageText.getBytes("UTF-8");
+		MessageDigest md = MessageDigest.getInstance("SHA-1");
+		md.update(messageBytes);
+		byte[] computedMessageHash = md.digest();
+		
+		byte[] receivedMessageHash = new byte[20];
+		
+		for (int i = 0; i < 20; i++) {
+			receivedMessageHash[i] = plainText[i];
+		}
+		
+		if (Arrays.equals(computedMessageHash, receivedMessageHash))
+			vout("\nThe hash is verified. This message was not altered in transit.");
 	}
 	
 	private static PrivateKey loadPrivateKey(String filename) throws FileNotFoundException,
