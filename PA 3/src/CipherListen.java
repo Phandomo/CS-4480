@@ -24,15 +24,8 @@ public class CipherListen {
 	private static PublicKey alicePublicKey;
 	
 	/* Application Entry Point */
-	public static void main(String[] args) throws InvalidKeyException,
-												  FileNotFoundException,
-												  NoSuchAlgorithmException,
-												  InvalidKeySpecException,
-												  NoSuchPaddingException,
-												  IllegalBlockSizeException,
-												  BadPaddingException,
-												  IOException,
-												  SignatureException {
+	public static void main(String[] args) {
+		// Gather the arguments
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-p") && args.length >= i)
 				try { port = Integer.parseInt(args[i+1]); } catch (NumberFormatException e) { error("Invalid port"); }
@@ -50,7 +43,12 @@ public class CipherListen {
 			 + "=============================\n");
 		
 		listen();
-		decryptMessage();
+		
+		try {
+			decryptMessage();
+		} catch (Exception e) {
+			error("There was a problem decrypting the message: "+e.getMessage());
+		}
 		
 		vout(""); // If output is verbose, add a new line at the very end
 	}
@@ -64,7 +62,7 @@ public class CipherListen {
 			Socket aliceSocket = bobSocket.accept();
 			
 			DataInputStream dis = new DataInputStream(aliceSocket.getInputStream());
-			int payloadLength = dis.readInt();
+			int payloadLength = dis.readInt(); // The first four bytes are the length of the payload
 			
 			if (payloadLength > 0) {
 				vout("Now receiving a secure message from Alice");
@@ -95,6 +93,7 @@ public class CipherListen {
 												IllegalBlockSizeException,
 												BadPaddingException,
 												SignatureException {
+		// The first four bytes of the payload are the size of the symmetric key in bytes
 		byte[] symmetricKeySizeBytes = new byte[4];
 		
 		for (int i = 0; i < 4; i++) {
@@ -103,6 +102,7 @@ public class CipherListen {
 		
 		int symmetricKeySize = ByteBuffer.wrap(symmetricKeySizeBytes).getInt();
 		
+		// Extract the encrypted symmetric key
 		byte[] encryptedSymmetricKey = new byte[symmetricKeySize];
 		
 		for (int i = 4, j = 0; i < 4 + symmetricKeySize; i++, j++) {
@@ -113,6 +113,7 @@ public class CipherListen {
 		
 		vout("Decrypting the 3DES key with Bob's private key");
 		
+		// Decrypt the symmetric key with Bob's private key
 		bobPrivateKey = loadPrivateKey(BOB_PRIVATE_KEY_FILENAME);
 		
 		printHex("Bob's private key", bobPrivateKey.getEncoded());
@@ -131,6 +132,7 @@ public class CipherListen {
 		
 		byte[] encryptedMessageParts = new byte[payload.length - symmetricKeySize - 4];
 		
+		// Get the encrypted parts of the message from the payload
 		for (int i = 4 + symmetricKeySize, j = 0; i < payload.length; i++, j++) {
 			encryptedMessageParts[j] = payload[i];
 		}
@@ -139,7 +141,7 @@ public class CipherListen {
 		
 		byte[] plainText = cipher.doFinal(encryptedMessageParts);
 		
-		// Decrypt the message so the hash can be verified
+		// Decrypt the message so the message digest can be verified
 		byte[] message = new byte[plainText.length - 20 - 128];
 		
 		for (int i = 20 + 128, j = 0; i < plainText.length; i++, j++) {
@@ -148,7 +150,7 @@ public class CipherListen {
 		
 		String messageText = new String(message, "UTF-8");
 		
-		// Get the hash (20 bytes)
+		// Compute the message digest (20 bytes)
 		byte[] messageBytes = messageText.getBytes("UTF-8");
 		MessageDigest md = MessageDigest.getInstance("SHA-1");
 		md.update(messageBytes);
@@ -189,6 +191,7 @@ public class CipherListen {
 		
 		vout("Checking the integrity of the message.");
 		
+		// Determine whether the hashes match
 		if (Arrays.equals(computedMessageHash, receivedMessageHash)) {
 			vout("The message digest is correct. This message was not altered in transit.");
 			print("\nThe plaintext message from Alice is:\n\n"+messageText);

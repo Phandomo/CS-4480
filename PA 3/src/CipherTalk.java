@@ -35,15 +35,8 @@ public class CipherTalk {
 	private static byte[] payload;
 	
 	/* Entry Point */
-	public static void main(String[] args) throws FileNotFoundException,
-												  IOException,
-												  NoSuchAlgorithmException,
-												  InvalidKeySpecException,
-												  InvalidKeyException,
-												  SignatureException,
-												  NoSuchPaddingException,
-												  IllegalBlockSizeException,
-												  BadPaddingException {
+	public static void main(String[] args) {
+		// Gather the arguments
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].equals("-a") && args.length >= i)
 				address = args[i+1];
@@ -57,6 +50,7 @@ public class CipherTalk {
 				help();
 		}
 		
+		// Validate the arguments
 		if (address == null)
 			error("Missing argument: -a <address>");
 		
@@ -66,7 +60,11 @@ public class CipherTalk {
 		if (messageString == null || messageString.length() == 0)
 			error("Missing argument: -m <message>");
 		
-		message = messageString.getBytes("UTF-8");
+		try {
+			message = messageString.getBytes("UTF-8");
+		} catch (Exception e) {
+			error("There was a problem with the message: "+e.getMessage());
+		}
 		
 		vout("\n========================================\n"
 		     + "    Starting CipherTalk Transmission\n"
@@ -74,9 +72,23 @@ public class CipherTalk {
 		
 		vout("The message from Alice to Bob is: \n\n"+messageString+"\n");
 		
-		signMessage();
-		encryptMessage();
-		sendMessage();
+		try {
+			signMessage();
+		} catch (Exception e) {
+			error("There was a problem signing the message: "+e.getMessage());
+		}
+		
+		try {
+			encryptMessage();
+		} catch (Exception e) {
+			error("There was a problem encrypting the message: "+e.getMessage());
+		}
+		
+		try {
+			sendMessage();
+		} catch (Exception e) {
+			error("There was a problem sending the message: "+e.getMessage());
+		}
 		
 		vout(""); // If output is verbose, add a new line at the very end
 	}
@@ -89,6 +101,7 @@ public class CipherTalk {
 											 SignatureException {
 		vout("Creating a SHA-1 message digest");
 		
+		// Compute the message digest
 		MessageDigest md = MessageDigest.getInstance("SHA-1");
 		md.update(message);
 		messageHash = md.digest();
@@ -104,6 +117,7 @@ public class CipherTalk {
 		
 		vout("Signing the message digest using Alice's private key");
 		
+		// Sign the message digest with Alice's private key
 		Signature rsa = Signature.getInstance("SHA1withRSA");
 		rsa.initSign(alicePrivateKey);
 		rsa.update(messageHash);
@@ -121,11 +135,13 @@ public class CipherTalk {
 												InvalidKeySpecException,
 												IOException,
 												SignatureException {
+		// Load the public key of the CA
 		vout("Loading the CA's public key");
 		caPublicKey = loadPublicKey(CA_PUBLIC_KEY_FILENAME);
 		
 		printHex("The CA's public key", caPublicKey.getEncoded());
 		
+		// Load the signature of Bob's key
 		vout("Loading the CA's signature of Bob's public key");
 		FileInputStream fis = new FileInputStream(BOB_CA_SIGNATURE);
 		byte[] CAsignature = new byte[fis.available()]; 
@@ -139,6 +155,7 @@ public class CipherTalk {
 		
 		printHex("Bob's public key", bobPublicKey.getEncoded());
 		
+		// Verify that the CA has signed Bob's key
 		vout("Verifying the CA signature on Bob's public key");
 		Signature rsa = Signature.getInstance("SHA1withRSA");
 		rsa.initVerify(caPublicKey);
@@ -153,6 +170,7 @@ public class CipherTalk {
 			System.exit(1);
 		}
 		
+		// Combine the message digest, signature, and message into one byte array
 		int hLength = messageHash.length;
 		int sLength = signature.length;
 		int mLength = message.length;
@@ -165,6 +183,7 @@ public class CipherTalk {
 		
 		vout("Generating a 3DES symmetric key");
 		
+		// Generate a 3DES symmetric key for encrypting the message parts
 		KeyGenerator keyGenerator = KeyGenerator.getInstance("DESede");
 		SecretKey tripleDesKey = keyGenerator.generateKey();
 		
@@ -172,6 +191,7 @@ public class CipherTalk {
 		
 		vout("Encrypting the hash, signature, and message to the 3DES key");
 		
+		// Encrypt the message parts
 		Cipher cipher = Cipher.getInstance("DESede/ECB/PKCS5Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, tripleDesKey);
 		cipherText = cipher.doFinal(messageParts);
@@ -180,6 +200,7 @@ public class CipherTalk {
 		
 		vout("Encrypting the 3DES key to Bob's public key");
 		
+		// Encrypt the 3DES symmetric key to Bob's public key
 		cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 		cipher.init(Cipher.ENCRYPT_MODE, bobPublicKey);
 		byte[] symmetricKey = cipher.doFinal(tripleDesKey.getEncoded());
@@ -216,9 +237,12 @@ public class CipherTalk {
 	private static void sendMessage() throws UnknownHostException,
 											 IOException {
 		vout("Sending the ciphertext to Bob...");
+		
+		// Connect to Bob's machine on the specified IP address and port
 		Socket bobSocket = new Socket(address, port);
 		DataOutputStream dos = new DataOutputStream(bobSocket.getOutputStream());
 		
+		// Send the payload to Bob
 		dos.writeInt(payload.length);
 		dos.write(payload);
 		dos.flush();
